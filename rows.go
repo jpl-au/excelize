@@ -103,7 +103,10 @@ func (rows *Rows) Next() bool {
 	}
 	rows.seekRow++
 	if rows.curRow >= rows.seekRow {
-		rows.curRowOpts = rows.seekRowOpts
+		rows.curRowOpts = RowOpts{}
+		if rows.curRow == rows.seekRow {
+			rows.curRowOpts = rows.seekRowOpts
+		}
 		return true
 	}
 	for {

@@ -85,6 +85,60 @@ func assertCellsMatch(t *testing.T, f *File, opts ...Options) (cells, formulas i
 	return cells, formulas
 }
 
+func TestFormatCellValue(t *testing.T) {
+	// Test format the cells read as raw values against the cells read as formatted values
+	for _, name := range []string{"Book1.xlsx", "CalcChain.xlsx", "SharedStrings.xlsx", "MergeCell.xlsx"} {
+		f, err := OpenFile(filepath.Join("test", name))
+		require.NoError(t, err)
+		for _, sheet := range f.GetSheetList() {
+			raw, err := f.Rows(sheet)
+			if err != nil {
+				continue
+			}
+			formatted, err := f.Rows(sheet)
+			require.NoError(t, err)
+			for raw.Next() {
+				require.True(t, formatted.Next())
+				cells, err := raw.Cells(Options{RawCellValue: true})
+				require.NoError(t, err)
+				expected, err := formatted.Cells()
+				require.NoError(t, err)
+				require.Len(t, cells, len(expected))
+				for i, cell := range cells {
+					value, err := f.FormatCellValue(cell)
+					assert.NoError(t, err)
+					assert.Equal(t, expected[i].Value, value, "%s %s row %d column %d", name, sheet, raw.seekRow, cell.Col)
+				}
+			}
+			assert.NoError(t, raw.Close())
+			assert.NoError(t, formatted.Close())
+		}
+		assert.NoError(t, f.Close())
+	}
+	// Test format a cell value with each data type and with the style of another cell
+	f := NewFile()
+	style, err := f.NewStyle(&Style{NumFmt: 2})
+	assert.NoError(t, err)
+	date, err := f.NewStyle(&Style{NumFmt: 14})
+	assert.NoError(t, err)
+	for expected, cell := range map[string]RowCell{
+		"1.50":     {Type: CellTypeNumber, Value: "1.5", StyleID: style},
+		"2.00":     {Value: "2", StyleID: style},
+		"TRUE":     {Type: CellTypeBool, Value: "1"},
+		"#N/A":     {Type: CellTypeError, Value: "#N/A"},
+		"text":     {Type: CellTypeSharedString, Value: "text", StyleID: style},
+		"inline":   {Type: CellTypeInlineString, Value: "inline"},
+		"result":   {Type: CellTypeFormula, Value: "result"},
+		"01-02-20": {Type: CellTypeDate, Value: "2020-01-02T00:00:00Z", StyleID: date},
+		"":         {},
+	} {
+		value, err := f.FormatCellValue(cell)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, value)
+	}
+	assert.NoError(t, f.Close())
+}
+
 func TestRowsCells(t *testing.T) {
 	for _, name := range []string{"Book1.xlsx", "CalcChain.xlsx", "MergeCell.xlsx", "OverflowNumericCell.xlsx", "SharedStrings.xlsx"} {
 		for _, raw := range []bool{false, true} {
@@ -124,6 +178,10 @@ func TestRowsCells(t *testing.T) {
 			for _, cell := range cells {
 				if cell.Col == 4 {
 					got = append(got, cell.Formula)
+					assert.Equal(t, STCellFormulaTypeShared, cell.FormulaType)
+				}
+				if cell.Col < 3 || cell.Col == 5 {
+					assert.Empty(t, cell.FormulaType)
 				}
 			}
 		}
@@ -146,9 +204,9 @@ func TestRowsCells(t *testing.T) {
 			got = append(got, cells)
 		}
 		assert.Equal(t, [][]RowCell{
-			{{Col: 1, Value: "1"}, {Col: 2, Type: CellTypeFormula, Value: "2", Formula: "A1*2"}},
+			{{Col: 1, Value: "1", HasValue: true}, {Col: 2, Type: CellTypeFormula, Value: "2", Formula: "A1*2", HasValue: true}},
 			nil, nil,
-			{{Col: 3, Type: CellTypeInlineString, Value: "text"}},
+			{{Col: 3, Type: CellTypeInlineString, Value: "text", HasValue: true}, {Col: 4, StyleID: 1}},
 		}, got)
 		assert.NoError(t, rows.Close())
 		assert.NoError(t, f.Close())

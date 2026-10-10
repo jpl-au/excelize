@@ -17,10 +17,22 @@ type RowCell struct {
 	// shared formula has the formula written out for that cell, the same text
 	// GetCellFormula returns.
 	Formula string
+	// FormulaType is the stored type of the formula: STCellFormulaTypeArray,
+	// STCellFormulaTypeDataTable, STCellFormulaTypeNormal or
+	// STCellFormulaTypeShared, or an empty string when the cell has no formula
+	// or the formula has no stored type.
+	FormulaType string
+	// StyleID is the style index of the cell, the same GetCellStyle returns
+	// for a cell that has a style of its own, or 0.
+	StyleID int
+	// HasValue reports whether the cell stores a value, which may be an empty
+	// string. For a formula it reports whether a cached result is stored.
+	HasValue bool
 }
 
-// Cells returns the cells of the current row that hold a value or a formula,
-// in column order. It reads the worksheet as a stream in the same way as
+// Cells returns the cells stored in the current row, in column order. A cell
+// that stores only a style is one of them; it has an empty value and HasValue
+// is false. It reads the worksheet as a stream in the same way as
 // Columns, and gives the formula and the data type of each cell as well as
 // its value, so that a large worksheet can be read in full without loading it
 // into memory. Use Cells or Columns for a row, not both. This fetches the
@@ -90,8 +102,8 @@ func (rows *Rows) Cells(opts ...Options) ([]RowCell, error) {
 		}
 		if xmlElement.Name.Local == "c" {
 			col++
-			cell, found, cellErr := rows.cell(&xmlElement, &col)
-			if err = cellErr; found {
+			var cell RowCell
+			if cell, err = rows.cell(&xmlElement, &col); err == nil {
 				cells = append(cells, cell)
 			}
 		}
@@ -104,29 +116,56 @@ func (rows *Rows) Cells(opts ...Options) ([]RowCell, error) {
 }
 
 // cell reads one cell element of the current row. It updates col from the cell
-// reference when the element has one, and reports whether the cell holds a
-// value or a formula.
-func (rows *Rows) cell(start *xml.StartElement, col *int) (RowCell, bool, error) {
-	c := xlsxC{}
-	if err := c.cellXMLHandler(rows.decoder, start); err != nil {
-		return RowCell{}, false, err
+// reference when the element has one.
+func (rows *Rows) cell(start *xml.StartElement, col *int) (RowCell, error) {
+	c := xlsxC{XMLName: start.Name}
+	err := c.cellXMLAttrHandler(start)
+	if err != nil {
+		return RowCell{}, err
 	}
-	var err error
+	hasValue := false
+	for done := false; !done; {
+		token, err := rows.decoder.Token()
+		if err != nil {
+			return RowCell{}, err
+		}
+		switch element := token.(type) {
+		case xml.StartElement:
+			switch element.Name.Local {
+			case "v":
+				hasValue = true
+				err = rows.decoder.DecodeElement(&c.V, &element)
+			case "f":
+				err = rows.decoder.DecodeElement(&c.F, &element)
+			case "is":
+				hasValue = true
+				err = rows.decoder.DecodeElement(&c.IS, &element)
+			}
+			if err != nil {
+				return RowCell{}, err
+			}
+		case xml.EndElement:
+			done = element == start.End()
+		}
+	}
 	if c.R != "" {
 		if *col, _, err = CellNameToCoordinates(c.R); err != nil {
-			return RowCell{}, false, err
+			return RowCell{}, err
 		}
 	} else if c.R, err = CoordinatesToCellName(*col, rows.curRow); err != nil {
-		return RowCell{}, false, err
+		return RowCell{}, err
 	}
-	cell := RowCell{Col: *col, Type: cellTypes[c.T]}
+	cell := RowCell{Col: *col, Type: cellTypes[c.T], StyleID: c.S, HasValue: hasValue}
 	if cell.Value, err = c.getValueFrom(rows.f, rows.sst, rows.rawCellValue); err != nil {
-		return RowCell{}, false, err
+		return RowCell{}, err
 	}
 	if cell.Formula, err = rows.formula(&c); err != nil {
-		return RowCell{}, false, err
+		return RowCell{}, err
 	}
-	return cell, cell.Value != "" || c.F != nil, nil
+	if c.F != nil {
+		cell.FormulaType = c.F.T
+	}
+	return cell, nil
 }
 
 // formula returns the formula of a cell read from the stream. A shared formula
@@ -151,4 +190,27 @@ func (rows *Rows) formula(c *xlsxC) (string, error) {
 		return "", nil
 	}
 	return first.convertSharedFormula(c.R)
+}
+
+// FormatCellValue returns the value of a cell with its number format applied,
+// by the given cell that the Cells function read with the RawCellValue
+// option. It is the value the Cells function returns for the cell without the
+// option, so a worksheet can be read once and only the cells of interest
+// formatted. The StyleID of the cell gives the number format, and can be
+// changed first to apply the style of a row or of a column.
+func (f *File) FormatCellValue(cell RowCell) (string, error) {
+	c := xlsxC{S: cell.StyleID, V: cell.Value}
+	switch cell.Type {
+	case CellTypeBool:
+		c.T = "b"
+	case CellTypeDate:
+		c.T = "d"
+	case CellTypeError:
+		c.T = "e"
+	case CellTypeFormula:
+		c.T = "str"
+	case CellTypeInlineString, CellTypeSharedString:
+		c.T, c.IS = "inlineStr", &xlsxSI{T: &xlsxT{Val: cell.Value}}
+	}
+	return c.getValueFrom(f, nil, false)
 }

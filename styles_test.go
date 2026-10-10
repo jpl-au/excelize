@@ -978,3 +978,42 @@ func TestGetStyle(t *testing.T) {
 		assert.Zero(t, style.Fill.Pattern)
 	})
 }
+
+func TestGetStyleNumFmtCode(t *testing.T) {
+	f := NewFile()
+	// Test get the number format code of the default style
+	code, err := f.GetStyleNumFmtCode(0)
+	assert.NoError(t, err)
+	assert.Equal(t, "general", code)
+	// Test get the number format code of a built-in and of a custom number format
+	builtIn, err := f.NewStyle(&Style{NumFmt: 2})
+	assert.NoError(t, err)
+	code, err = f.GetStyleNumFmtCode(builtIn)
+	assert.NoError(t, err)
+	assert.Equal(t, "0.00", code)
+	custom, err := f.NewStyle(&Style{CustomNumFmt: new("0.0\" km\"")})
+	assert.NoError(t, err)
+	code, err = f.GetStyleNumFmtCode(custom)
+	assert.NoError(t, err)
+	assert.Equal(t, "0.0\" km\"", code)
+	// Test get the number format code of a built-in number format that has no format code
+	f.Styles.CellXfs.Xf[builtIn].NumFmtID = new(5)
+	code, err = f.GetStyleNumFmtCode(builtIn)
+	assert.NoError(t, err)
+	assert.Empty(t, code)
+	// Test get the number format code of a style without a number format
+	f.Styles.CellXfs.Xf[builtIn].NumFmtID = nil
+	code, err = f.GetStyleNumFmtCode(builtIn)
+	assert.NoError(t, err)
+	assert.Equal(t, "general", code)
+	// Test get the number format code with invalid style index
+	_, err = f.GetStyleNumFmtCode(-1)
+	assert.Equal(t, newInvalidStyleID(-1), err)
+	_, err = f.GetStyleNumFmtCode(100)
+	assert.Equal(t, newInvalidStyleID(100), err)
+	// Test get the number format code with unsupported charset style sheet
+	f.Styles = nil
+	f.Pkg.Store(defaultXMLPathStyles, MacintoshCyrillicCharset)
+	_, err = f.GetStyleNumFmtCode(0)
+	assert.EqualError(t, err, "XML syntax error on line 1: invalid UTF-8")
+}
