@@ -40,6 +40,9 @@ type File struct {
 	sheetMap         map[string]string
 	streams          map[string]*StreamWriter
 	tempFiles        sync.Map
+	zipParts         sync.Map
+	zipPartsMu       sync.Mutex
+	zipFile          *os.File
 	xmlAttr          sync.Map
 	calcCache        sync.Map
 	calcRawCache     sync.Map
@@ -145,7 +148,8 @@ func OpenFile(filename string, opts ...Options) (*File, error) {
 		return f, err
 	}
 	f.Path = filename
-	return f, file.Close()
+	f.zipFile = file
+	return f, nil
 }
 
 // newFile is object builder
@@ -227,9 +231,6 @@ func openReaderAt(r io.ReaderAt, size int64, opts ...Options) (*File, error) {
 	f.SheetCount = sheetCount
 	for k, v := range file {
 		f.Pkg.Store(k, v)
-	}
-	if f.CalcChain, err = f.calcChainReader(); err != nil {
-		return f, err
 	}
 	if f.sheetMap, err = f.getSheetMap(); err != nil {
 		return f, err

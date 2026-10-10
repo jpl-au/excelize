@@ -285,13 +285,17 @@ func TestOpenReader(t *testing.T) {
 	}
 	// Test open workbook with unsupported charset internal XML parts
 	for _, defaultXMLPath := range []string{
-		defaultXMLPathCalcChain,
 		defaultXMLPathStyles,
 		defaultXMLPathWorkbookRels,
 	} {
 		_, err = OpenReader(preset(defaultXMLPath, false))
 		assert.EqualError(t, err, "XML syntax error on line 1: invalid UTF-8")
 	}
+	// Test read the calculation chain with unsupported charset
+	f, err := OpenReader(preset(defaultXMLPathCalcChain, false))
+	assert.NoError(t, err)
+	_, err = f.calcChainReader()
+	assert.EqualError(t, err, "XML syntax error on line 1: invalid UTF-8")
 	// Test open workbook without internal XML parts
 	for _, defaultXMLPath := range []string{
 		defaultXMLPathCalcChain,
@@ -309,7 +313,7 @@ func TestOpenReader(t *testing.T) {
 	assert.EqualError(t, err, newUnzipSizeLimitError(100).Error())
 
 	// Test open password protected spreadsheet created by Microsoft Office Excel 2010
-	f, err := OpenFile(filepath.Join("test", "encryptSHA1.xlsx"), Options{Password: "password"})
+	f, err = OpenFile(filepath.Join("test", "encryptSHA1.xlsx"), Options{Password: "password"})
 	assert.NoError(t, err)
 	val, err := f.GetCellValue("Sheet1", "A1")
 	assert.NoError(t, err)

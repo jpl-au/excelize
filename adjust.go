@@ -849,8 +849,8 @@ func adjustCellName(cell string, dir adjustDirection, c, r, offset int) (string,
 // adjustCalcChain provides a function to update the calculation chain when
 // inserting or deleting rows or columns.
 func (f *File) adjustCalcChain(ws *xlsxWorksheet, sheet string, dir adjustDirection, num, offset, sheetID int) error {
-	if f.CalcChain == nil {
-		return nil
+	if _, err := f.calcChainReader(); err != nil {
+		return err
 	}
 	// If sheet ID is omitted, it is assumed to be the same as the i value of
 	// the previous cell.

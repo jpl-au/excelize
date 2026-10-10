@@ -781,6 +781,7 @@ func (sw *StreamWriter) Flush() error {
 	sw.file.Sheet.Delete(sheetPath)
 	sw.file.checked.Delete(sheetPath)
 	sw.file.Pkg.Delete(sheetPath)
+	sw.file.zipParts.Delete(sheetPath)
 
 	return nil
 }

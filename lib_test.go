@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -430,4 +431,65 @@ func TestCheckFileSize(t *testing.T) {
 	assert.EqualError(t, f.checkFileSize(UnzipSizeLimit+1, 1), newUnzipSizeLimitError(UnzipSizeLimit).Error())
 	assert.EqualError(t, f.checkFileSize(1, UnzipSizeLimit+1), newUnzipSizeLimitError(UnzipSizeLimit).Error())
 	assert.EqualError(t, f.checkFileSize(-1, 1), newUnzipSizeLimitError(UnzipSizeLimit).Error())
+}
+
+func TestReadZipParts(t *testing.T) {
+	f, err := OpenFile(filepath.Join("test", "Book1.xlsx"))
+	assert.NoError(t, err)
+	// Test worksheets are left in the ZIP archive on open
+	_, ok := f.zipParts.Load("xl/worksheets/sheet1.xml")
+	assert.True(t, ok)
+	_, ok = f.Pkg.Load("xl/worksheets/sheet1.xml")
+	assert.False(t, ok)
+	assert.Equal(t, []string{"Sheet1", "Sheet2"}, f.GetSheetList())
+	// Test read a worksheet on demand
+	expected, err := f.GetRows("Sheet2")
+	assert.NoError(t, err)
+	assert.NotEmpty(t, expected)
+	_, ok = f.zipParts.Load("xl/worksheets/sheet2.xml")
+	assert.False(t, ok)
+	_, ok = f.zipParts.Load("xl/worksheets/sheet1.xml")
+	assert.True(t, ok)
+	// Test read a part that was not left in the ZIP archive
+	f.readZipPart("xl/workbook.xml")
+	// Test save workbook with a worksheet that was not read
+	saved := filepath.Join("test", "TestReadZipParts.xlsx")
+	assert.NoError(t, f.SaveAs(saved))
+	assert.Nil(t, f.zipFile)
+	_, ok = f.zipParts.Load("xl/worksheets/sheet1.xml")
+	assert.False(t, ok)
+	assert.NoError(t, f.Close())
+	original, err := OpenFile(filepath.Join("test", "Book1.xlsx"))
+	assert.NoError(t, err)
+	f, err = OpenFile(saved)
+	assert.NoError(t, err)
+	for _, sheet := range original.GetSheetList() {
+		expected, err := original.GetRows(sheet)
+		assert.NoError(t, err)
+		rows, err := f.GetRows(sheet)
+		assert.NoError(t, err)
+		assert.Equal(t, expected, rows)
+	}
+	assert.NoError(t, original.Close())
+	// Test delete a worksheet that was not read
+	assert.NoError(t, f.DeleteSheet("Sheet1"))
+	assert.NoError(t, f.Save())
+	assert.NoError(t, f.Close())
+	f, err = OpenFile(saved)
+	assert.NoError(t, err)
+	assert.Equal(t, []string{"Sheet2"}, f.GetSheetList())
+	rows, err := f.GetRows("Sheet2")
+	assert.NoError(t, err)
+	assert.Equal(t, expected, rows)
+	// Test close workbook with worksheets that were not read
+	assert.NoError(t, f.Close())
+	assert.Nil(t, f.zipFile)
+	// Test the calculation chain is read on demand
+	f, err = OpenFile(filepath.Join("test", "CalcChain.xlsx"))
+	assert.NoError(t, err)
+	assert.Nil(t, f.CalcChain)
+	calcChain, err := f.calcChainReader()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, calcChain.C)
+	assert.NoError(t, f.Close())
 }

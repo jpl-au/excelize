@@ -893,6 +893,7 @@ func TestSheetDimension(t *testing.T) {
 	// Test get the worksheet dimension in stream mode without dimension element
 	f, err = OpenFile(filepath.Join("test", "Book1.xlsx"), Options{UnzipXMLSizeLimit: 128})
 	assert.NoError(t, err)
+	f.readZipPart("xl/worksheets/sheet1.xml")
 	tempFile, ok := f.tempFiles.Load("xl/worksheets/sheet1.xml")
 	assert.True(t, ok)
 	assert.NoError(t, os.WriteFile(tempFile.(string), fmt.Appendf(nil, `<worksheet xmlns="%s"><sheetData/></worksheet>`, NameSpaceSpreadSheet.Value), 0o644))

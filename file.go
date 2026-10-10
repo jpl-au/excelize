@@ -76,6 +76,9 @@ func (f *File) SaveAs(name string, opts ...Options) error {
 	if _, ok := supportedContentTypes[strings.ToLower(filepath.Ext(f.Path))]; !ok {
 		return ErrWorkbookFileFormat
 	}
+	if err := f.readZipParts(); err != nil {
+		return err
+	}
 	file, err := os.OpenFile(filepath.Clean(name), os.O_WRONLY|os.O_TRUNC|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
@@ -104,6 +107,13 @@ func (f *File) Close() error {
 		return true
 	})
 	f.tempFiles.Clear()
+	f.zipParts.Clear()
+	if f.zipFile != nil {
+		if err := f.zipFile.Close(); err != nil && firstErr == nil {
+			firstErr = err
+		}
+		f.zipFile = nil
+	}
 	return firstErr
 }
 
@@ -161,6 +171,9 @@ func (f *File) WriteToBuffer() (*bytes.Buffer, error) {
 
 // writeToZip provides a function to write to ZipWriter.
 func (f *File) writeToZip(zw ZipWriter) error {
+	if err := f.readZipParts(); err != nil {
+		return err
+	}
 	f.calcChainWriter()
 	f.commentsWriter()
 	f.contentTypesWriter()

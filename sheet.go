@@ -500,6 +500,9 @@ func (f *File) getSheetMap() (map[string]string, error) {
 				if _, ok := f.tempFiles.Load(sheetXMLPath); ok {
 					maps[v.Name] = sheetXMLPath
 				}
+				if _, ok := f.zipParts.Load(sheetXMLPath); ok {
+					maps[v.Name] = sheetXMLPath
+				}
 			}
 		}
 	}
@@ -603,6 +606,7 @@ func (f *File) DeleteSheet(sheet string) error {
 		_ = f.deleteCalcChain(f.getSheetID(sheet), "")
 		delete(f.sheetMap, v.Name)
 		f.Pkg.Delete(sheetXML)
+		f.zipParts.Delete(sheetXML)
 		f.Pkg.Delete(rels)
 		f.Relationships.Delete(rels)
 		f.Sheet.Delete(sheetXML)

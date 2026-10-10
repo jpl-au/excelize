@@ -73,15 +73,14 @@ func (f *File) ReadZipReader(r *zip.Reader) (map[string][]byte, int, error) {
 		}
 		if strings.HasPrefix(strings.ToLower(fileName), "xl/worksheets/sheet") {
 			worksheets++
-			if fileSize > f.options.UnzipXMLSizeLimit && !v.FileInfo().IsDir() {
-				tempFile, err := f.unzipToTemp(v)
-				if tempFile != "" {
-					f.tempFiles.Store(fileName, tempFile)
-				}
-				if err == nil {
-					continue
-				}
+			if !v.FileInfo().IsDir() {
+				f.zipParts.Store(fileName, v)
+				continue
 			}
+		}
+		if fileName == defaultXMLPathCalcChain {
+			f.zipParts.Store(fileName, v)
+			continue
 		}
 		if fileList[fileName], err = readFile(v); err != nil {
 			return nil, 0, err
@@ -110,8 +109,59 @@ func (f *File) unzipToTemp(zipFile *zip.File) (string, error) {
 	return tmp.Name(), tmp.Close()
 }
 
+// readZipPart provides a function to read a part that was left in the ZIP
+// archive on open. A worksheet part larger than the UnzipXMLSizeLimit is
+// extracted to the system temporary directory, any other part is read into
+// memory.
+func (f *File) readZipPart(name string) {
+	if _, ok := f.zipParts.Load(name); !ok {
+		return
+	}
+	f.zipPartsMu.Lock()
+	defer f.zipPartsMu.Unlock()
+	part, ok := f.zipParts.Load(name)
+	if !ok {
+		return
+	}
+	zipFile := part.(*zip.File)
+	if name != defaultXMLPathCalcChain && zipFile.FileInfo().Size() > f.options.UnzipXMLSizeLimit {
+		tempFile, err := f.unzipToTemp(zipFile)
+		if tempFile != "" {
+			f.tempFiles.Store(name, tempFile)
+		}
+		if err == nil {
+			f.zipParts.Delete(name)
+			return
+		}
+	}
+	if content, err := readFile(zipFile); err == nil {
+		f.Pkg.Store(name, content)
+	}
+	f.zipParts.Delete(name)
+}
+
+// readZipParts provides a function to read every part that was left in the
+// ZIP archive on open, and to close the opened workbook file.
+func (f *File) readZipParts() error {
+	var names []string
+	f.zipParts.Range(func(name, _ any) bool {
+		names = append(names, name.(string))
+		return true
+	})
+	for _, name := range names {
+		f.readZipPart(name)
+	}
+	if f.zipFile == nil {
+		return nil
+	}
+	err := f.zipFile.Close()
+	f.zipFile = nil
+	return err
+}
+
 // readXML provides a function to read XML content as bytes.
 func (f *File) readXML(name string) []byte {
+	f.readZipPart(name)
 	if content, _ := f.Pkg.Load(name); content != nil {
 		return content.([]byte)
 	}
@@ -139,6 +189,7 @@ func (f *File) readBytes(name string) []byte {
 
 // readTemp read file from system temporary directory by given path.
 func (f *File) readTemp(name string) (file *os.File, err error) {
+	f.readZipPart(name)
 	path, ok := f.tempFiles.Load(name)
 	if !ok {
 		return
