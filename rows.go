@@ -93,6 +93,7 @@ type Rows struct {
 	decoder                 *xml.Decoder
 	token                   xml.Token
 	curRowOpts, seekRowOpts RowOpts
+	sharedFormulas          map[int]*xlsxC
 }
 
 // Next will return true if it finds the next row element.
