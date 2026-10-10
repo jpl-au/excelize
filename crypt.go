@@ -325,7 +325,7 @@ func standardConvertPasswdToKey(header StandardEncryptionHeader, verifier Standa
 		return nil, err
 	}
 	key := hashing("sha1", verifier.Salt, passwordBuffer)
-	for i := 0; i < iterCount; i++ {
+	for i := range iterCount {
 		iterator := createUInt32LEBuffer(i, 4)
 		key = hashing("sha1", iterator, key)
 	}
@@ -487,7 +487,7 @@ func convertPasswdToKey(passwd string, blockKey []byte, encryption Encryption) (
 		return nil, ErrUnsupportedHashAlgorithm
 	}
 	// Now regenerate until spin count.
-	for i := 0; i < spinCount; i++ {
+	for i := range spinCount {
 		iterator := createUInt32LEBuffer(i, 4)
 		key = hashing(encryption.KeyData.HashAlgorithm, iterator, key)
 	}
@@ -567,11 +567,7 @@ func decryptPackage(packageKey, input []byte, encryption Encryption) (outputChun
 	var iv, outputChunk []byte
 	for end < len(input) {
 		start = end
-		end = start + packageEncryptionChunkSize
-
-		if end > len(input) {
-			end = len(input)
-		}
+		end = min(start+packageEncryptionChunkSize, len(input))
 		// Grab the next chunk
 		inputChunk := input[start:end]
 
@@ -595,7 +591,7 @@ func decryptPackage(packageKey, input []byte, encryption Encryption) (outputChun
 }
 
 // createIV create an initialization vector (IV).
-func createIV(blockKey interface{}, encryption Encryption) ([]byte, error) {
+func createIV(blockKey any, encryption Encryption) ([]byte, error) {
 	encryptedKey := encryption.KeyData
 	// Create the block key from the current index
 	var blockKeyBuf []byte
@@ -670,7 +666,7 @@ func genISOPasswdHash(passwd, hashAlgorithm, salt string, spinCount int) (hashVa
 	// Generate the initial hash.
 	key := hashing(algorithmName, b.Bytes())
 	// Now regenerate until spin count.
-	for i := 0; i < spinCount; i++ {
+	for i := range spinCount {
 		iterator := createUInt32LEBuffer(i, 4)
 		key = hashing(algorithmName, key, iterator)
 	}
@@ -698,7 +694,7 @@ type sector struct {
 // writeBytes write bytes in the stream by a given value with an offset.
 func (c *cfb) writeBytes(value []byte) {
 	pos := c.position
-	for i := 0; i < len(value); i++ {
+	for i := range value {
 		for j := len(c.stream); j <= i+pos; j++ {
 			c.stream = append(c.stream, 0)
 		}
@@ -914,7 +910,7 @@ func (c *cfb) writeDirectoryEntry(location []int) {
 			for j = 0; j < 3; j++ {
 				c.writeUint32(-1)
 			}
-			for j = 0; j < 12; j++ {
+			for j = range 12 {
 				c.writeUint32(0)
 			}
 			continue
@@ -938,7 +934,7 @@ func (c *cfb) writeDirectoryEntry(location []int) {
 		c.writeUint32(sector.R)
 		c.writeUint32(sector.C)
 		if len(sector.clsID) == 0 {
-			for j = 0; j < 4; j++ {
+			for j = range 4 {
 				c.writeUint32(0)
 			}
 		} else {

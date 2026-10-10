@@ -299,7 +299,7 @@ func (f *File) addComment(commentsXML string, opts vmlOptions) error {
 		if countUTF16String(opts.Comment.Text) > TotalCellChars {
 			opts.Comment.Text = truncateUTF16Units(opts.Comment.Text, TotalCellChars)
 		}
-		cmt.Text.T = stringPtr(opts.Comment.Text)
+		cmt.Text.T = new(opts.Comment.Text)
 		chars += countUTF16String(opts.Comment.Text)
 	}
 	for _, run := range opts.Comment.Paragraph {
@@ -312,12 +312,12 @@ func (f *File) addComment(commentsXML string, opts vmlOptions) error {
 		chars += countUTF16String(run.Text)
 		r := xlsxR{
 			RPr: &xlsxRPr{
-				Sz: &attrValFloat{Val: float64Ptr(9)},
+				Sz: &attrValFloat{Val: new(float64(9))},
 				Color: &xlsxColor{
 					Indexed: 81,
 				},
-				RFont:  &attrValString{Val: stringPtr(defaultFont)},
-				Family: &attrValInt{Val: intPtr(2)},
+				RFont:  &attrValString{Val: new(defaultFont)},
+				Family: &attrValInt{Val: new(2)},
 			},
 			T: &xlsxT{Val: run.Text, Space: xml.Attr{
 				Name:  xml.Name{Space: NameSpaceXML, Local: "space"},
@@ -339,7 +339,7 @@ func (f *File) addComment(commentsXML string, opts vmlOptions) error {
 // the folder xl.
 func (f *File) countComments() int {
 	comments := map[string]struct{}{}
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/comments") {
 			comments[k.(string)] = struct{}{}
 		}
@@ -495,7 +495,7 @@ func (f *File) DeleteFormControl(sheet, cell string) error {
 // in the folder xl/drawings.
 func (f *File) countVMLDrawing() int {
 	drawings := map[string]struct{}{}
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/drawings/vmlDrawing") {
 			drawings[k.(string)] = struct{}{}
 		}
@@ -690,7 +690,7 @@ var formCtrlPresets = map[FormControlType]formCtrlPreset{
 		fill:         nil,
 		textHAlign:   "",
 		textVAlign:   "Center",
-		noThreeD:     stringPtr(""),
+		noThreeD:     new(""),
 		firstButton:  nil,
 		shadow:       nil,
 	},
@@ -705,7 +705,7 @@ var formCtrlPresets = map[FormControlType]formCtrlPreset{
 		fill:         nil,
 		textHAlign:   "",
 		textVAlign:   "",
-		noThreeD:     stringPtr(""),
+		noThreeD:     new(""),
 		firstButton:  nil,
 		shadow:       nil,
 	},
@@ -735,8 +735,8 @@ var formCtrlPresets = map[FormControlType]formCtrlPreset{
 		fill:         nil,
 		textHAlign:   "",
 		textVAlign:   "Center",
-		noThreeD:     stringPtr(""),
-		firstButton:  stringPtr(""),
+		noThreeD:     new(""),
+		firstButton:  new(""),
 		shadow:       nil,
 	},
 	FormControlScrollBar: {
@@ -796,7 +796,7 @@ func (sp *encodeShape) addFormCtrl(opts *vmlOptions) error {
 	sp.ClientData.Page = opts.PageChange
 	if opts.Type == FormControlScrollBar {
 		if opts.Horizontally {
-			sp.ClientData.Horiz = stringPtr("")
+			sp.ClientData.Horiz = new("")
 		}
 		sp.ClientData.Dx = 15
 	}
@@ -817,8 +817,8 @@ func (f *File) addFormCtrlShape(preset formCtrlPreset, col, row int, anchor stri
 			ObjectType:  preset.objectType,
 			Anchor:      anchor,
 			AutoFill:    preset.autoFill,
-			Row:         intPtr(row - 1),
-			Column:      intPtr(col - 1),
+			Row:         new(row - 1),
+			Column:      new(col - 1),
 			TextHAlign:  preset.textHAlign,
 			TextVAlign:  preset.textVAlign,
 			NoThreeD:    preset.noThreeD,
@@ -833,12 +833,12 @@ func (f *File) addFormCtrlShape(preset formCtrlPreset, col, row int, anchor stri
 		if idx == -1 {
 			return &sp, newInvalidOptionalValue("Positioning", opts.Format.Positioning, supportedPositioning)
 		}
-		sp.ClientData.MoveWithCells = []*string{stringPtr(""), nil, nil}[idx]
-		sp.ClientData.SizeWithCells = []*string{stringPtr(""), stringPtr(""), nil}[idx]
+		sp.ClientData.MoveWithCells = []*string{new(""), nil, nil}[idx]
+		sp.ClientData.SizeWithCells = []*string{new(""), new(""), nil}[idx]
 	}
 	if opts.Type == FormControlNote {
-		sp.ClientData.MoveWithCells = stringPtr("")
-		sp.ClientData.SizeWithCells = stringPtr("")
+		sp.ClientData.MoveWithCells = new("")
+		sp.ClientData.SizeWithCells = new("")
 	}
 	if !opts.formCtrl {
 		return &sp, nil

@@ -55,8 +55,8 @@ func TestDataValidation(t *testing.T) {
 
 	_, err = f.NewSheet("Sheet2")
 	assert.NoError(t, err)
-	assert.NoError(t, f.SetSheetRow("Sheet2", "A2", &[]interface{}{"B2", 1}))
-	assert.NoError(t, f.SetSheetRow("Sheet2", "A3", &[]interface{}{"B3", 3}))
+	assert.NoError(t, f.SetSheetRow("Sheet2", "A2", &[]any{"B2", 1}))
+	assert.NoError(t, f.SetSheetRow("Sheet2", "A3", &[]any{"B3", 3}))
 	dv = NewDataValidation(true)
 	dv.Sqref = "A1:B1"
 	assert.NoError(t, dv.SetRange("INDIRECT($A$2)", "INDIRECT($A$3)", DataValidationTypeWhole, DataValidationOperatorBetween))

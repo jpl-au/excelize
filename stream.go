@@ -319,7 +319,7 @@ func getRowElement(token xml.Token, hRow int) (startElement xml.StartElement, ok
 type Cell struct {
 	StyleID int
 	Formula string
-	Value   interface{}
+	Value   any
 }
 
 // RowOpts define the options for the set row, it can be used directly in
@@ -385,7 +385,7 @@ func parseRowOpts(opts ...RowOpts) *RowOpts {
 //
 // As a special case, if Cell is used as a value, then the Cell.StyleID will be
 // applied to that cell.
-func (sw *StreamWriter) SetRow(cell string, values []interface{}, opts ...RowOpts) error {
+func (sw *StreamWriter) SetRow(cell string, values []any, opts ...RowOpts) error {
 	col, row, err := CellNameToCoordinates(cell)
 	if err != nil {
 		return err
@@ -601,7 +601,7 @@ func (sw *StreamWriter) setCellDuration(c *xlsxC, val time.Duration) error {
 }
 
 // setCellValFunc provides a function to set value of a cell.
-func (sw *StreamWriter) setCellValFunc(c *xlsxC, val interface{}) error {
+func (sw *StreamWriter) setCellValFunc(c *xlsxC, val any) error {
 	var err error
 	switch val := val.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
@@ -632,7 +632,7 @@ func (sw *StreamWriter) setCellValFunc(c *xlsxC, val interface{}) error {
 }
 
 // setCellIntFunc is a wrapper of SetCellInt.
-func setCellIntFunc(c *xlsxC, val interface{}) {
+func setCellIntFunc(c *xlsxC, val any) {
 	switch val := val.(type) {
 	case int:
 		c.T, c.V = setCellInt(int64(val))

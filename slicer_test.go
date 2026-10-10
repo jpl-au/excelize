@@ -438,7 +438,7 @@ func TestSlicer(t *testing.T) {
 	f, err = OpenFile(workbookPath)
 	assert.NoError(t, err)
 	// Test get sheet slicers without slicer cache
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/slicerCaches/slicerCache") {
 			f.Pkg.Delete(k.(string))
 		}

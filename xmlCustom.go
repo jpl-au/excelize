@@ -123,5 +123,5 @@ type decodeProperty struct {
 // time.Time, or nil.
 type CustomProperty struct {
 	Name  string
-	Value interface{}
+	Value any
 }

@@ -158,7 +158,7 @@ func parseSlicerOptions(opts *SlicerOptions) (*SlicerOptions, error) {
 // folder xl/slicers.
 func (f *File) countSlicers() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/slicers/slicer") {
 			count++
 		}
@@ -171,7 +171,7 @@ func (f *File) countSlicers() int {
 // in the folder xl/SlicerCaches.
 func (f *File) countSlicerCache() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/slicerCaches/slicerCache") {
 			count++
 		}
@@ -321,7 +321,7 @@ func (f *File) genSlicerName(name string) string {
 		slicerName string
 		names      []string
 	)
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/slicers/slicer") {
 			slicers, err := f.slicerReader(k.(string))
 			if err != nil {
@@ -401,7 +401,7 @@ func (f *File) genSlicerCacheName(name string) string {
 func (f *File) setSlicerCache(colIdx int, opts *SlicerOptions, table *Table, pivotTable *PivotTableOptions) (string, error) {
 	var ok bool
 	var slicerCacheName string
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/slicerCaches/slicerCache") {
 			slicerCache, err := f.slicerCacheReader(k.(string))
 			if err != nil {
@@ -570,7 +570,7 @@ func (f *File) addSlicerCache(slicerCacheName string, colIdx int, opts *SlicerOp
 			Tabular: &xlsxTabularSlicerCache{
 				PivotCacheID: pivotCacheID,
 				SortOrder:    sortOrder,
-				ShowMissing:  boolPtr(false),
+				ShowMissing:  new(false),
 				Items: &xlsxTabularSlicerCacheItems{
 					Count: len(items), I: items,
 				},
@@ -684,11 +684,11 @@ func (f *File) addDrawingSlicer(sheet, slicerName string, ns xml.Attr, opts *Sli
 		},
 		SpPr: &xlsxSpPr{
 			Xfrm:      xlsxXfrm{Off: xlsxOff{X: 2914650, Y: 152400}, Ext: xlsxPositiveSize2D{Cx: 1828800, Cy: 2238375}},
-			SolidFill: &aSolidFill{SrgbClr: &aSrgbClr{Val: stringPtr("FFFFFF")}},
+			SolidFill: &aSolidFill{SrgbClr: &aSrgbClr{Val: new("FFFFFF")}},
 			PrstGeom: xlsxPrstGeom{
 				Prst: "rect",
 			},
-			Ln: &aLn{W: 1, SolidFill: &aSolidFill{PrstClr: &attrValString{Val: stringPtr("black")}}},
+			Ln: &aLn{W: 1, SolidFill: &aSolidFill{PrstClr: &attrValString{Val: new("black")}}},
 		},
 		TxBody: &xdrTxBody{
 			BodyPr: &aBodyPr{VertOverflow: "clip", HorzOverflow: "clip"},
@@ -848,7 +848,7 @@ func (f *File) getSlicerCache(slicerCacheName string, opt *SlicerOptions) *xlsxS
 		err         error
 		slicerCache *xlsxSlicerCacheDefinition
 	)
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/slicerCaches/slicerCache") {
 			slicerCache, err = f.slicerCacheReader(k.(string))
 			if err != nil {

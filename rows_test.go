@@ -215,8 +215,8 @@ func TestRowHeight(t *testing.T) {
 
 	// Test get row height with custom default row height
 	assert.NoError(t, f.SetSheetProps(sheet1, &SheetPropsOptions{
-		DefaultRowHeight: float64Ptr(30.0),
-		CustomHeight:     boolPtr(true),
+		DefaultRowHeight: new(30.0),
+		CustomHeight:     new(true),
 	}))
 	height, err = f.GetRowHeight(sheet1, 100)
 	assert.NoError(t, err)
@@ -1151,7 +1151,7 @@ func TestNumberFormats(t *testing.T) {
 	assert.NoError(t, err)
 	numFmt40, err := f.NewStyle(&Style{NumFmt: 40})
 	assert.NoError(t, err)
-	for _, cases := range [][]interface{}{
+	for _, cases := range [][]any{
 		{"A1", numFmt1, 8.8888666665555493e+19, "88888666665555500000"},
 		{"A2", numFmt1, 8.8888666665555487, "9"},
 		{"A3", numFmt2, 8.8888666665555493e+19, "88888666665555500000.00"},

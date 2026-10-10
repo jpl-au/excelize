@@ -593,7 +593,7 @@ func parseChartOptions(opts *Chart) (*Chart, error) {
 		return opts, ErrTransparency
 	}
 	if opts.VaryColors == nil {
-		opts.VaryColors = boolPtr(true)
+		opts.VaryColors = new(true)
 	}
 	if opts.Border.Width == 0 {
 		opts.Border.Width = 0.75
@@ -1395,7 +1395,7 @@ func (f *File) DeleteChart(sheet, cell string) error {
 // folder xl/charts.
 func (f *File) countCharts() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/charts/chart") {
 			count++
 		}

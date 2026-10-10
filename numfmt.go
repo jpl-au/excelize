@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -5403,7 +5404,7 @@ func (nf *numberFormat) applyZeroPlaceHolderToken(token nfp.Token) {
 
 // handleDigitsLiteral apply digit placeholder tokens for the number literal.
 func handleDigitsLiteral(text string, tokenValueLen, intPartLen, hashZeroPartLen int, fill bool) (int, string) {
-	var result string
+	var result strings.Builder
 	l := tokenValueLen
 	if intPartLen == 0 && len(text) > hashZeroPartLen {
 		l = len(text) + tokenValueLen - hashZeroPartLen
@@ -5414,12 +5415,12 @@ func handleDigitsLiteral(text string, tokenValueLen, intPartLen, hashZeroPartLen
 	for i := 0; i < l; i++ {
 		j := i + intPartLen
 		if 0 <= j && j < len([]rune(text)) {
-			result += string([]rune(text)[j])
+			result.WriteString(string([]rune(text)[j]))
 		} else if fill {
-			result += " "
+			result.WriteString(" ")
 		}
 	}
-	return l, result
+	return l, result.String()
 }
 
 // getNumberLiteralParts returns the fraction boundary and digit placeholder
@@ -5428,8 +5429,8 @@ func (nf *numberFormat) getNumberLiteralParts() (int, int) {
 	var hashZeroPartLen int
 	lastNonFractionPartDigital := math.MaxInt
 	appearedFraction := false
-	for idx := len(nf.section[nf.sectionIdx].Items) - 1; idx >= 0; idx-- {
-		token := nf.section[nf.sectionIdx].Items[idx]
+	for idx, token := range slices.Backward(nf.section[nf.sectionIdx].Items) {
+
 		if token.TType == nfp.TokenTypeFraction {
 			appearedFraction = true
 		} else if appearedFraction && (token.TType == nfp.TokenTypeHashPlaceHolder || token.TType == nfp.TokenTypeDigitalPlaceHolder) {
@@ -5515,7 +5516,7 @@ func printCommaSep(text string) string {
 		subStr = strings.Split(text, ".")
 		length = len(subStr[0])
 	)
-	for i := 0; i < length; i++ {
+	for i := range length {
 		if i > 0 && (length-i)%3 == 0 {
 			target.WriteString(",")
 		}
@@ -5645,10 +5646,7 @@ func (nf *numberFormat) dateTimeHandler() string {
 			nf.switchArgument = token.TValue
 		}
 		if token.TType == nfp.TokenTypeZeroPlaceHolder {
-			zeroHolderLen := len(token.TValue)
-			if zeroHolderLen > 3 {
-				zeroHolderLen = 3
-			}
+			zeroHolderLen := min(len(token.TValue), 3)
 			nf.result += fmt.Sprintf("%03d", nf.t.Nanosecond()/1e6)[:zeroHolderLen]
 		}
 	}

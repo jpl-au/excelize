@@ -49,10 +49,10 @@ func (opts *GraphicOptions) parseGraphicOptions(defaults *GraphicOptions) (*Grap
 		return defaults, ErrMaxGraphicNameLength
 	}
 	if opts.PrintObject == nil {
-		opts.PrintObject = boolPtr(true)
+		opts.PrintObject = new(true)
 	}
 	if opts.Locked == nil {
-		opts.Locked = boolPtr(true)
+		opts.Locked = new(true)
 	}
 	if opts.ScaleX == 0 {
 		opts.ScaleX = defaultDrawingScale
@@ -73,8 +73,8 @@ func parsePictureOptions(pic *Picture) (*GraphicOptions, error) {
 		return nil, ErrParameterInvalid
 	}
 	return pic.Format.parseGraphicOptions(&GraphicOptions{
-		PrintObject: boolPtr(true),
-		Locked:      boolPtr(true),
+		PrintObject: new(true),
+		Locked:      new(true),
 		ScaleX:      defaultDrawingScale,
 		ScaleY:      defaultDrawingScale,
 	})
@@ -354,13 +354,13 @@ func (f *File) addSheetPicture(sheet string, rID int) error {
 // folder xl/drawings.
 func (f *File) countDrawings() int {
 	drawings := map[string]struct{}{}
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/drawings/drawing") {
 			drawings[k.(string)] = struct{}{}
 		}
 		return true
 	})
-	f.Drawings.Range(func(rel, value interface{}) bool {
+	f.Drawings.Range(func(rel, value any) bool {
 		if strings.Contains(rel.(string), "xl/drawings/drawing") {
 			drawings[rel.(string)] = struct{}{}
 		}
@@ -476,7 +476,7 @@ func (f *File) addDrawingPicture(sheet, drawingXML, cell, ext string, rID, hyper
 // folder xl/media/image.
 func (f *File) countMedia() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/media/image") {
 			count++
 		}
@@ -491,7 +491,7 @@ func (f *File) countMedia() int {
 func (f *File) addMedia(file []byte, ext string) string {
 	count := f.countMedia()
 	var name string
-	f.Pkg.Range(func(k, existing interface{}) bool {
+	f.Pkg.Range(func(k, existing any) bool {
 		if !strings.HasPrefix(k.(string), "xl/media/image") {
 			return true
 		}
@@ -626,7 +626,7 @@ func (f *File) DeletePicture(sheet, cell string) error {
 			return err
 		}
 		var used bool
-		checkPicRef := func(k, v interface{}) bool {
+		checkPicRef := func(k, v any) bool {
 			if strings.Contains(k.(string), "xl/drawings/_rels/drawing") {
 				if k.(string) == drawingRels {
 					return true
@@ -746,8 +746,8 @@ func (f *File) extractPictureFromDecodeAnchor(drawingRelationships string, a *de
 		pic    *Picture
 		target string
 	)
-	if strings.HasPrefix(r.Target, "/") {
-		target = strings.TrimPrefix(r.Target, "/")
+	if after, ok := strings.CutPrefix(r.Target, "/"); ok {
+		target = after
 	} else {
 		target = filepath.ToSlash(filepath.Clean("xl/drawings/" + r.Target))
 	}
@@ -858,7 +858,7 @@ func (f *File) getDrawingRelationships(rels, rID string) *xlsxRelationship {
 // drawingsWriter provides a function to save xl/drawings/drawing%d.xml after
 // serialize structure.
 func (f *File) drawingsWriter() {
-	f.Drawings.Range(func(path, d interface{}) bool {
+	f.Drawings.Range(func(path, d any) bool {
 		if d != nil {
 			v, _ := xml.Marshal(d.(*xlsxWsDr))
 			f.saveFileList(path.(string), v)
@@ -936,8 +936,8 @@ func (f *File) getPictureCells(drawingXML, drawingRelationships string) ([]strin
 	}
 	cb2 := func(a *decodeCellAnchor, r *xlsxRelationship, drawingRelationships string) {
 		var target string
-		if strings.HasPrefix(r.Target, "/") {
-			target = strings.TrimPrefix(r.Target, "/")
+		if after, ok := strings.CutPrefix(r.Target, "/"); ok {
+			target = after
 		} else {
 			target = filepath.ToSlash(filepath.Clean("xl/drawings/" + r.Target))
 		}

@@ -103,14 +103,14 @@ func TestAddDrawingChart(t *testing.T) {
 
 	path := "xl/drawings/drawing1.xml"
 	f.Pkg.Store(path, MacintoshCyrillicCharset)
-	assert.EqualError(t, f.addDrawingChart("Sheet1", path, "A1", 0, 0, 0, &GraphicOptions{PrintObject: boolPtr(true), Locked: boolPtr(false)}), "XML syntax error on line 1: invalid UTF-8")
+	assert.EqualError(t, f.addDrawingChart("Sheet1", path, "A1", 0, 0, 0, &GraphicOptions{PrintObject: new(true), Locked: new(false)}), "XML syntax error on line 1: invalid UTF-8")
 }
 
 func TestAddSheetDrawingChart(t *testing.T) {
 	f := NewFile()
 	path := "xl/drawings/drawing1.xml"
 	f.Pkg.Store(path, MacintoshCyrillicCharset)
-	assert.EqualError(t, f.addSheetDrawingChart(path, 0, &GraphicOptions{PrintObject: boolPtr(true), Locked: boolPtr(false)}), "XML syntax error on line 1: invalid UTF-8")
+	assert.EqualError(t, f.addSheetDrawingChart(path, 0, &GraphicOptions{PrintObject: new(true), Locked: new(false)}), "XML syntax error on line 1: invalid UTF-8")
 }
 
 func TestDeleteDrawing(t *testing.T) {
@@ -214,9 +214,9 @@ func TestAddChart(t *testing.T) {
 		ScaleY:          defaultDrawingScale,
 		OffsetX:         15,
 		OffsetY:         10,
-		PrintObject:     boolPtr(true),
+		PrintObject:     new(true),
 		LockAspectRatio: false,
-		Locked:          boolPtr(false),
+		Locked:          new(false),
 	}
 	legend := ChartLegend{Position: "left", ShowLegendKey: false}
 	plotArea := ChartPlotArea{
@@ -234,7 +234,7 @@ func TestAddChart(t *testing.T) {
 		opts            *Chart
 	}{
 		{sheetName: "Sheet1", cell: "Q1", opts: &Chart{Type: Col, Series: series, Format: format, Legend: ChartLegend{Position: "none", ShowLegendKey: true}, Title: ChartTitle{Fill: Fill{Type: "pattern", Color: []string{"EEEEEE"}, Pattern: 1}, Border: LineOptions{Type: LineSolid, Dash: LineDashDot, Width: 1}, Paragraph: []RichTextRun{{Text: "2D Column Chart", Font: &Font{Size: 11, Family: "Calibri"}}}, OffsetX: 10, OffsetY: 5, Width: 80, Height: 10}, PlotArea: plotArea, Border: LineOptions{Type: LineNone}, ShowBlanksAs: "zero", XAxis: ChartAxis{Font: Font{Bold: true, Italic: true, Underline: "dbl", Family: "Times New Roman", Size: 15, Strike: true, Color: "000000"}, Title: ChartTitle{Fill: Fill{Type: "gradient", Pattern: 1}, Border: LineOptions{Type: LineSolid, Dash: LineDashDot, Width: 1}, Paragraph: []RichTextRun{{Text: "Primary Horizontal Axis Title"}}}}, YAxis: ChartAxis{Font: Font{Bold: false, Italic: false, Underline: "sng", Color: "777777"}, Title: ChartTitle{Paragraph: []RichTextRun{{Text: "Primary Vertical Axis Title", Font: &Font{Color: "777777", Bold: true, Italic: true, Size: 12}}}}}}},
-		{sheetName: "Sheet1", cell: "W1", opts: &Chart{Type: ColStacked, Series: series, Format: format, Legend: legend, Title: ChartTitle{Paragraph: []RichTextRun{{Text: "2D Stacked Column Chart"}}}, XAxis: ChartAxis{Title: ChartTitle{Formula: "Sheet1!$A$27"}}, YAxis: ChartAxis{Title: ChartTitle{Formula: "Sheet1!$A$28"}}, PlotArea: plotArea, Fill: Fill{Type: "pattern", Pattern: 1}, Border: LineOptions{Type: LineAutomatic}, ShowBlanksAs: "zero", GapWidth: uintPtr(10), Overlap: intPtr(100)}},
+		{sheetName: "Sheet1", cell: "W1", opts: &Chart{Type: ColStacked, Series: series, Format: format, Legend: legend, Title: ChartTitle{Paragraph: []RichTextRun{{Text: "2D Stacked Column Chart"}}}, XAxis: ChartAxis{Title: ChartTitle{Formula: "Sheet1!$A$27"}}, YAxis: ChartAxis{Title: ChartTitle{Formula: "Sheet1!$A$28"}}, PlotArea: plotArea, Fill: Fill{Type: "pattern", Pattern: 1}, Border: LineOptions{Type: LineAutomatic}, ShowBlanksAs: "zero", GapWidth: new(uint(10)), Overlap: new(100)}},
 		{sheetName: "Sheet1", cell: "Q16", opts: &Chart{Type: ColPercentStacked, Series: series, Format: format, Legend: legend, Title: ChartTitle{Paragraph: []RichTextRun{{Text: "100% Stacked Column Chart"}}}, PlotArea: plotArea, Fill: Fill{Type: "pattern", Color: []string{"EEEEEE"}, Pattern: 1}, Border: LineOptions{Type: LineSolid, Width: 2}, ShowBlanksAs: "zero", XAxis: ChartAxis{Alignment: Alignment{Vertical: "wordArtVertRtl", TextRotation: 0}}}},
 		{sheetName: "Sheet1", cell: "W16", opts: &Chart{Type: Col3DClustered, Series: series, Format: format, Legend: ChartLegend{Position: "bottom", ShowLegendKey: false, Font: &Font{Size: 10}}, Title: ChartTitle{Paragraph: []RichTextRun{{Text: "3D Clustered Column Chart"}}}, PlotArea: plotArea, ShowBlanksAs: "zero"}},
 		{sheetName: "Sheet1", cell: "Q30", opts: &Chart{Type: Col3DStacked, Series: series, Format: format, Legend: legend, Title: ChartTitle{Paragraph: []RichTextRun{{Text: "3D Stacked Column Chart"}}}, PlotArea: plotArea, ShowBlanksAs: "zero", XAxis: ChartAxis{Alignment: Alignment{Vertical: "vert", TextRotation: 0}}}},
@@ -302,14 +302,14 @@ func TestAddChart(t *testing.T) {
 	// combo chart
 	_, err = f.NewSheet("Combo Charts")
 	assert.NoError(t, err)
-	clusteredColumnCombo := [][]interface{}{
+	clusteredColumnCombo := [][]any{
 		{"A1", Line, "Clustered Column - Line Chart"},
 		{"I1", Doughnut, "Clustered Column - Doughnut Chart"},
 	}
 	for _, props := range clusteredColumnCombo {
 		assert.NoError(t, f.AddChart("Combo Charts", props[0].(string), &Chart{Type: Col, Series: series[:4], Format: format, Legend: legend, Title: ChartTitle{Paragraph: []RichTextRun{{Text: props[2].(string)}}}, PlotArea: ChartPlotArea{ShowBubbleSize: true, ShowCatName: false, ShowDataTable: true, ShowDataTableKeys: true, ShowLeaderLines: false, ShowPercent: true, ShowSerName: true, ShowVal: true}}, &Chart{Type: props[1].(ChartType), Series: series[4:], Format: format, Legend: legend, PlotArea: ChartPlotArea{ShowBubbleSize: true, ShowCatName: false, ShowLeaderLines: false, ShowPercent: true, ShowSerName: true, ShowVal: true}, YAxis: ChartAxis{Secondary: true}}))
 	}
-	stackedAreaCombo := map[string][]interface{}{
+	stackedAreaCombo := map[string][]any{
 		"A16": {Line, "Stacked Area - Line Chart"},
 		"I16": {Doughnut, "Stacked Area - Doughnut Chart"},
 	}
@@ -347,7 +347,7 @@ func TestAddChart(t *testing.T) {
 
 	t.Run("for_create_stock_chart", func(t *testing.T) {
 		f := NewFile()
-		for i, row := range [][]interface{}{
+		for i, row := range [][]any{
 			{"Date", "Volume", "Open", "High", "Low", "Close"},
 			{45593, 14864000, 431.66, 431.94, 426.3, 426.59},
 			{45590, 16899100, 426.76, 432.52, 426.57, 428.15},
@@ -417,7 +417,7 @@ func TestAddChart(t *testing.T) {
 			Series: []ChartSeries{
 				{Name: "Sheet1!$B$1", Categories: "Sheet1!$A$2:$A$22", Values: "Sheet1!$B$2:$B$22"},
 			},
-			VaryColors: boolPtr(false),
+			VaryColors: new(false),
 			XAxis:      ChartAxis{NumFmt: ChartNumFmt{CustomNumFmt: "d-mmm-yy"}},
 			YAxis:      ChartAxis{NumFmt: ChartNumFmt{CustomNumFmt: "#,##0"}},
 			Title:      ChartTitle{Paragraph: []RichTextRun{{Text: "Volume-High-Low-Close Stock Chart"}}},
@@ -435,7 +435,7 @@ func TestAddChart(t *testing.T) {
 			Series: []ChartSeries{
 				{Name: "Sheet1!$B$1", Categories: "Sheet1!$A$2:$A$22", Values: "Sheet1!$B$2:$B$22"},
 			},
-			VaryColors: boolPtr(false),
+			VaryColors: new(false),
 			XAxis:      ChartAxis{NumFmt: ChartNumFmt{CustomNumFmt: "d-mmm-yy"}},
 			YAxis:      ChartAxis{NumFmt: ChartNumFmt{CustomNumFmt: "#,##0"}},
 			Title:      ChartTitle{Paragraph: []RichTextRun{{Text: "Volume-Open-High-Low-Close Stock Chart"}}},
@@ -520,9 +520,9 @@ func TestDeleteChart(t *testing.T) {
 		ScaleY:          defaultDrawingScale,
 		OffsetX:         15,
 		OffsetY:         10,
-		PrintObject:     boolPtr(true),
+		PrintObject:     new(true),
 		LockAspectRatio: false,
-		Locked:          boolPtr(false),
+		Locked:          new(false),
 	}
 	legend := ChartLegend{Position: "left", ShowLegendKey: false}
 	plotArea := ChartPlotArea{
@@ -617,10 +617,10 @@ func TestChartWithLogarithmicBase(t *testing.T) {
 	xmlCharts := make([]xmlChartContent, expectedChartsCount)
 	expectedChartsLogBase := []float64{0, 10.5, 0, 2, 0, 1000}
 	var (
-		drawingML interface{}
+		drawingML any
 		ok        bool
 	)
-	for i := 0; i < expectedChartsCount; i++ {
+	for i := range expectedChartsCount {
 		chartPath := fmt.Sprintf("xl/charts/chart%d.xml", i+1)
 		if drawingML, ok = newFile.Pkg.Load(chartPath); ok {
 			xmlCharts[i] = drawingML.([]byte)

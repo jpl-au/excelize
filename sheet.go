@@ -156,7 +156,7 @@ func (f *File) workSheetWriter() {
 		buffer  = bytes.NewBuffer(arr)
 		encoder = xml.NewEncoder(buffer)
 	)
-	f.Sheet.Range(func(p, ws interface{}) bool {
+	f.Sheet.Range(func(p, ws any) bool {
 		if ws != nil {
 			sheet := ws.(*xlsxWorksheet)
 			if sheet.MergeCells != nil && len(sheet.MergeCells.Cells) > 0 {
@@ -262,7 +262,7 @@ func (f *File) setSheet(index int, name string) {
 // relsWriter provides a function to save relationships after
 // serialize structure.
 func (f *File) relsWriter() {
-	f.Relationships.Range(func(path, rel interface{}) bool {
+	f.Relationships.Range(func(path, rel any) bool {
 		if rel != nil {
 			output, _ := xml.Marshal(rel.(*xlsxRelationships))
 			if strings.HasPrefix(path.(string), "xl/worksheets/sheet/rels/sheet") {
@@ -671,7 +671,7 @@ func deleteAndAdjustDefinedNames(wb *xlsxWorkbook, deleteLocalSheetID int) {
 				wb.DefinedNames.DefinedName = append(wb.DefinedNames.DefinedName[:idx], wb.DefinedNames.DefinedName[idx+1:]...)
 				idx--
 			} else if localSheetID > deleteLocalSheetID {
-				wb.DefinedNames.DefinedName[idx].LocalSheetID = intPtr(*dn.LocalSheetID - 1)
+				wb.DefinedNames.DefinedName[idx].LocalSheetID = new(*dn.LocalSheetID - 1)
 			}
 		}
 	}
@@ -1726,10 +1726,10 @@ func (ws *xlsxWorksheet) setPageSetUp(opts *PageLayoutOptions) error {
 // GetPageLayout provides a function to gets worksheet page layout.
 func (f *File) GetPageLayout(sheet string) (PageLayoutOptions, error) {
 	opts := PageLayoutOptions{
-		Size:            intPtr(0),
-		Orientation:     stringPtr(supportedPageOrientation[0]),
-		FirstPageNumber: uintPtr(1),
-		AdjustTo:        uintPtr(100),
+		Size:            new(0),
+		Orientation:     new(supportedPageOrientation[0]),
+		FirstPageNumber: new(uint(1)),
+		AdjustTo:        new(uint(100)),
 	}
 	ws, err := f.workSheetReader(sheet)
 	if err != nil {
@@ -1740,13 +1740,13 @@ func (f *File) GetPageLayout(sheet string) (PageLayoutOptions, error) {
 			opts.Size = ws.PageSetUp.PaperSize
 		}
 		if ws.PageSetUp.Orientation != "" {
-			opts.Orientation = stringPtr(ws.PageSetUp.Orientation)
+			opts.Orientation = new(ws.PageSetUp.Orientation)
 		}
 		if num, _ := strconv.Atoi(ws.PageSetUp.FirstPageNumber); num != 0 {
-			opts.FirstPageNumber = uintPtr(uint(num))
+			opts.FirstPageNumber = new(uint(num))
 		}
 		if ws.PageSetUp.Scale >= 10 && ws.PageSetUp.Scale <= 400 {
-			opts.AdjustTo = uintPtr(uint(ws.PageSetUp.Scale))
+			opts.AdjustTo = new(uint(ws.PageSetUp.Scale))
 		}
 		if ws.PageSetUp.FitToHeight != nil {
 			opts.FitToHeight = ws.PageSetUp.FitToHeight
@@ -1754,9 +1754,9 @@ func (f *File) GetPageLayout(sheet string) (PageLayoutOptions, error) {
 		if ws.PageSetUp.FitToWidth != nil {
 			opts.FitToWidth = ws.PageSetUp.FitToWidth
 		}
-		opts.BlackAndWhite = boolPtr(ws.PageSetUp.BlackAndWhite)
+		opts.BlackAndWhite = new(ws.PageSetUp.BlackAndWhite)
 		if ws.PageSetUp.PageOrder != "" {
-			opts.PageOrder = stringPtr(ws.PageSetUp.PageOrder)
+			opts.PageOrder = new(ws.PageSetUp.PageOrder)
 		}
 	}
 	return opts, err
@@ -2095,7 +2095,7 @@ func (ws *xlsxWorksheet) prepareSheetXML(col, row int) {
 	var ht *float64
 	var customHeight bool
 	if ws.SheetFormatPr != nil && ws.SheetFormatPr.CustomHeight {
-		ht = float64Ptr(ws.SheetFormatPr.DefaultRowHeight)
+		ht = new(ws.SheetFormatPr.DefaultRowHeight)
 		customHeight = true
 	}
 	if rowCount > 0 {

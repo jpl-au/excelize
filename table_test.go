@@ -20,11 +20,11 @@ func TestAddTable(t *testing.T) {
 		ShowColumnStripes: true,
 		ShowFirstColumn:   true,
 		ShowLastColumn:    true,
-		ShowRowStripes:    boolPtr(true),
+		ShowRowStripes:    new(true),
 	}))
 	assert.NoError(t, f.AddTable("Sheet2", &Table{
 		Range:         "D1:D11",
-		ShowHeaderRow: boolPtr(false),
+		ShowHeaderRow: new(false),
 	}))
 	assert.NoError(t, f.AddTable("Sheet2", &Table{Range: "F1:F1", StyleName: "TableStyleMedium8"}))
 	// Test get tables in worksheet

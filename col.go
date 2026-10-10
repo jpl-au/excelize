@@ -300,7 +300,7 @@ func (ws *xlsxWorksheet) setColVisible(minVal, maxVal int, visible bool) {
 	colData := xlsxCol{
 		Min:         minVal,
 		Max:         maxVal,
-		Width:       float64Ptr(defaultColWidth),
+		Width:       new(defaultColWidth),
 		Hidden:      !visible,
 		CustomWidth: true,
 	}
@@ -477,7 +477,7 @@ func (ws *xlsxWorksheet) setColStyle(minVal, maxVal, styleID int) {
 	ws.Cols.Col = flatCols(xlsxCol{
 		Min:   minVal,
 		Max:   maxVal,
-		Width: float64Ptr(width),
+		Width: new(width),
 		Style: styleID,
 	}, ws.Cols.Col, func(fc, c xlsxCol) xlsxCol {
 		fc.BestFit = c.BestFit
@@ -522,7 +522,7 @@ func (ws *xlsxWorksheet) setColWidth(minVal, maxVal int, width float64) {
 	col := xlsxCol{
 		Min:         minVal,
 		Max:         maxVal,
-		Width:       float64Ptr(width),
+		Width:       new(width),
 		CustomWidth: true,
 	}
 	if ws.Cols == nil {

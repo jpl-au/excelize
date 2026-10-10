@@ -33,7 +33,7 @@ func (f *File) SetPageMargins(sheet string, opts *PageLayoutMarginsOptions) erro
 		}
 	}
 	s := reflect.ValueOf(opts).Elem()
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		if !s.Field(i).IsNil() {
 			preparePageMargins(ws)
 			name := s.Type().Field(i).Name
@@ -54,28 +54,28 @@ func (f *File) SetPageMargins(sheet string, opts *PageLayoutMarginsOptions) erro
 // GetPageMargins provides a function to get worksheet page margins.
 func (f *File) GetPageMargins(sheet string) (PageLayoutMarginsOptions, error) {
 	opts := PageLayoutMarginsOptions{
-		Bottom: float64Ptr(0.75),
-		Footer: float64Ptr(0.3),
-		Header: float64Ptr(0.3),
-		Left:   float64Ptr(0.7),
-		Right:  float64Ptr(0.7),
-		Top:    float64Ptr(0.75),
+		Bottom: new(0.75),
+		Footer: new(0.3),
+		Header: new(0.3),
+		Left:   new(0.7),
+		Right:  new(0.7),
+		Top:    new(0.75),
 	}
 	ws, err := f.workSheetReader(sheet)
 	if err != nil {
 		return opts, err
 	}
 	if ws.PageMargins != nil {
-		opts.Bottom = float64Ptr(ws.PageMargins.Bottom)
-		opts.Footer = float64Ptr(ws.PageMargins.Footer)
-		opts.Header = float64Ptr(ws.PageMargins.Header)
-		opts.Left = float64Ptr(ws.PageMargins.Left)
-		opts.Right = float64Ptr(ws.PageMargins.Right)
-		opts.Top = float64Ptr(ws.PageMargins.Top)
+		opts.Bottom = new(ws.PageMargins.Bottom)
+		opts.Footer = new(ws.PageMargins.Footer)
+		opts.Header = new(ws.PageMargins.Header)
+		opts.Left = new(ws.PageMargins.Left)
+		opts.Right = new(ws.PageMargins.Right)
+		opts.Top = new(ws.PageMargins.Top)
 	}
 	if ws.PrintOptions != nil {
-		opts.Horizontally = boolPtr(ws.PrintOptions.HorizontalCentered)
-		opts.Vertically = boolPtr(ws.PrintOptions.VerticalCentered)
+		opts.Horizontally = new(ws.PrintOptions.HorizontalCentered)
+		opts.Vertically = new(ws.PrintOptions.VerticalCentered)
 	}
 	return opts, err
 }
@@ -146,7 +146,7 @@ func (ws *xlsxWorksheet) setSheetProps(opts *SheetPropsOptions) {
 			prepareTabColor(ws)
 			name := s.Type().Field(i).Name
 			fld := reflect.ValueOf(ws.SheetPr.TabColor).Elem().FieldByName(name[8:])
-			if s.Field(i).Kind() == reflect.Ptr && fld.Kind() == reflect.Ptr {
+			if s.Field(i).Kind() == reflect.Pointer && fld.Kind() == reflect.Pointer {
 				fld.Set(s.Field(i))
 				continue
 			}
@@ -182,10 +182,10 @@ func (f *File) SetSheetProps(sheet string, opts *SheetPropsOptions) error {
 func (f *File) GetSheetProps(sheet string) (SheetPropsOptions, error) {
 	baseColWidth := uint8(8)
 	opts := SheetPropsOptions{
-		EnableFormatConditionsCalculation: boolPtr(true),
-		Published:                         boolPtr(true),
-		AutoPageBreaks:                    boolPtr(true),
-		OutlineSummaryBelow:               boolPtr(true),
+		EnableFormatConditionsCalculation: new(true),
+		Published:                         new(true),
+		AutoPageBreaks:                    new(true),
+		OutlineSummaryBelow:               new(true),
 		BaseColWidth:                      &baseColWidth,
 	}
 	ws, err := f.workSheetReader(sheet)
@@ -193,7 +193,7 @@ func (f *File) GetSheetProps(sheet string) (SheetPropsOptions, error) {
 		return opts, err
 	}
 	if ws.SheetPr != nil {
-		opts.CodeName = stringPtr(ws.SheetPr.CodeName)
+		opts.CodeName = new(ws.SheetPr.CodeName)
 		if ws.SheetPr.EnableFormatConditionsCalculation != nil {
 			opts.EnableFormatConditionsCalculation = ws.SheetPr.EnableFormatConditionsCalculation
 		}
@@ -201,28 +201,28 @@ func (f *File) GetSheetProps(sheet string) (SheetPropsOptions, error) {
 			opts.Published = ws.SheetPr.Published
 		}
 		if ws.SheetPr.PageSetUpPr != nil {
-			opts.AutoPageBreaks = boolPtr(ws.SheetPr.PageSetUpPr.AutoPageBreaks)
-			opts.FitToPage = boolPtr(ws.SheetPr.PageSetUpPr.FitToPage)
+			opts.AutoPageBreaks = new(ws.SheetPr.PageSetUpPr.AutoPageBreaks)
+			opts.FitToPage = new(ws.SheetPr.PageSetUpPr.FitToPage)
 		}
 		if ws.SheetPr.OutlinePr != nil {
 			opts.OutlineSummaryBelow = ws.SheetPr.OutlinePr.SummaryBelow
 			opts.OutlineSummaryRight = ws.SheetPr.OutlinePr.SummaryRight
 		}
 		if ws.SheetPr.TabColor != nil {
-			opts.TabColorIndexed = intPtr(ws.SheetPr.TabColor.Indexed)
-			opts.TabColorRGB = stringPtr(ws.SheetPr.TabColor.RGB)
+			opts.TabColorIndexed = new(ws.SheetPr.TabColor.Indexed)
+			opts.TabColorRGB = new(ws.SheetPr.TabColor.RGB)
 			opts.TabColorTheme = ws.SheetPr.TabColor.Theme
-			opts.TabColorTint = float64Ptr(ws.SheetPr.TabColor.Tint)
+			opts.TabColorTint = new(ws.SheetPr.TabColor.Tint)
 		}
 	}
 	if ws.SheetFormatPr != nil {
 		opts.BaseColWidth = &ws.SheetFormatPr.BaseColWidth
-		opts.DefaultColWidth = float64Ptr(ws.SheetFormatPr.DefaultColWidth)
-		opts.DefaultRowHeight = float64Ptr(ws.SheetFormatPr.DefaultRowHeight)
-		opts.CustomHeight = boolPtr(ws.SheetFormatPr.CustomHeight)
-		opts.ZeroHeight = boolPtr(ws.SheetFormatPr.ZeroHeight)
-		opts.ThickTop = boolPtr(ws.SheetFormatPr.ThickTop)
-		opts.ThickBottom = boolPtr(ws.SheetFormatPr.ThickBottom)
+		opts.DefaultColWidth = new(ws.SheetFormatPr.DefaultColWidth)
+		opts.DefaultRowHeight = new(ws.SheetFormatPr.DefaultRowHeight)
+		opts.CustomHeight = new(ws.SheetFormatPr.CustomHeight)
+		opts.ZeroHeight = new(ws.SheetFormatPr.ZeroHeight)
+		opts.ThickTop = new(ws.SheetFormatPr.ThickTop)
+		opts.ThickBottom = new(ws.SheetFormatPr.ThickBottom)
 	}
 	return opts, err
 }

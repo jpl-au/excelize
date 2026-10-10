@@ -14,14 +14,14 @@ func TestSetPageMargins(t *testing.T) {
 	ws.(*xlsxWorksheet).PageMargins = nil
 	ws.(*xlsxWorksheet).PrintOptions = nil
 	expected := PageLayoutMarginsOptions{
-		Bottom:       float64Ptr(1.0),
-		Footer:       float64Ptr(1.0),
-		Header:       float64Ptr(1.0),
-		Left:         float64Ptr(1.0),
-		Right:        float64Ptr(1.0),
-		Top:          float64Ptr(1.0),
-		Horizontally: boolPtr(true),
-		Vertically:   boolPtr(true),
+		Bottom:       new(1.0),
+		Footer:       new(1.0),
+		Header:       new(1.0),
+		Left:         new(1.0),
+		Right:        new(1.0),
+		Top:          new(1.0),
+		Horizontally: new(true),
+		Vertically:   new(true),
 	}
 	assert.NoError(t, f.SetPageMargins("Sheet1", &expected))
 	opts, err := f.GetPageMargins("Sheet1")
@@ -50,22 +50,22 @@ func TestSetSheetProps(t *testing.T) {
 	assert.True(t, ok)
 	ws.(*xlsxWorksheet).SheetPr = nil
 	ws.(*xlsxWorksheet).SheetFormatPr = nil
-	baseColWidth, enable := uint8(8), boolPtr(true)
+	baseColWidth, enable := uint8(8), new(true)
 	expected := SheetPropsOptions{
-		CodeName:                          stringPtr("code"),
+		CodeName:                          new("code"),
 		EnableFormatConditionsCalculation: enable,
 		Published:                         enable,
 		AutoPageBreaks:                    enable,
 		FitToPage:                         enable,
-		TabColorIndexed:                   intPtr(1),
-		TabColorRGB:                       stringPtr("FFFF00"),
-		TabColorTheme:                     intPtr(1),
-		TabColorTint:                      float64Ptr(1),
+		TabColorIndexed:                   new(1),
+		TabColorRGB:                       new("FFFF00"),
+		TabColorTheme:                     new(1),
+		TabColorTint:                      new(float64(1)),
 		OutlineSummaryBelow:               enable,
 		OutlineSummaryRight:               enable,
 		BaseColWidth:                      &baseColWidth,
-		DefaultColWidth:                   float64Ptr(10),
-		DefaultRowHeight:                  float64Ptr(10),
+		DefaultColWidth:                   new(float64(10)),
+		DefaultRowHeight:                  new(float64(10)),
 		CustomHeight:                      enable,
 		ZeroHeight:                        enable,
 		ThickTop:                          enable,
@@ -79,11 +79,11 @@ func TestSetSheetProps(t *testing.T) {
 	ws.(*xlsxWorksheet).SheetPr = nil
 	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{FitToPage: enable}))
 	ws.(*xlsxWorksheet).SheetPr = nil
-	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{TabColorRGB: stringPtr("FFFF00")}))
+	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{TabColorRGB: new("FFFF00")}))
 	ws.(*xlsxWorksheet).SheetPr = nil
-	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{TabColorTheme: intPtr(1)}))
+	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{TabColorTheme: new(1)}))
 	ws.(*xlsxWorksheet).SheetPr = nil
-	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{TabColorTint: float64Ptr(1)}))
+	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{TabColorTint: new(float64(1))}))
 
 	// Test get column width after set base column width
 	_, err = f.NewSheet("Sheet2")

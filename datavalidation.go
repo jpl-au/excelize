@@ -163,8 +163,8 @@ func (dv *DataValidation) SetDropList(keys []string) error {
 
 // SetRange provides function to set data validation range in drop list, only
 // accepts int, float64, string or []string data type formula argument.
-func (dv *DataValidation) SetRange(f1, f2 interface{}, t DataValidationType, o DataValidationOperator) error {
-	genFormula := func(val interface{}) (string, error) {
+func (dv *DataValidation) SetRange(f1, f2 any, t DataValidationType, o DataValidationOperator) error {
+	genFormula := func(val any) (string, error) {
 		var formula string
 		switch v := val.(type) {
 		case int:

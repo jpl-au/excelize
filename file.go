@@ -97,7 +97,7 @@ func (f *File) Close() error {
 		_ = stream.rawData.Close()
 	}
 	f.streams = nil
-	f.tempFiles.Range(func(k, v interface{}) bool {
+	f.tempFiles.Range(func(k, v any) bool {
 		if err := os.Remove(v.(string)); err != nil && firstErr == nil {
 			firstErr = err
 		}
@@ -198,7 +198,7 @@ func (f *File) writeToZip(zw ZipWriter) error {
 		err              error
 		files, tempFiles []string
 	)
-	f.Pkg.Range(func(path, content interface{}) bool {
+	f.Pkg.Range(func(path, content any) bool {
 		if _, ok := f.streams[path.(string)]; ok {
 			return true
 		}
@@ -216,7 +216,7 @@ func (f *File) writeToZip(zw ZipWriter) error {
 			f.zip64Entries = append(f.zip64Entries, path)
 		}
 	}
-	f.tempFiles.Range(func(path, content interface{}) bool {
+	f.tempFiles.Range(func(path, content any) bool {
 		if _, ok := f.Pkg.Load(path); ok {
 			return true
 		}

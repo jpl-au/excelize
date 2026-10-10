@@ -40,8 +40,8 @@ func TestAddPicture(t *testing.T) {
 		{Name: "Picture 4", Hyperlink: "#Sheet2!D8", HyperlinkType: "Location"},
 		{Name: "Picture 4", OffsetX: 10, OffsetY: 10, ScaleX: 0.5, ScaleY: 0.5, Hyperlink: "https://github.com/xuri/excelize", HyperlinkType: "External", Positioning: "oneCell"},
 		{Name: "Picture 5", OffsetX: 10, OffsetY: 10, ScaleX: 0.88, ScaleY: 0.88, Hyperlink: "https://github.com/xuri/excelize", HyperlinkType: "External"},
-		{Name: "Picture 4", PrintObject: boolPtr(true), Locked: boolPtr(true), OffsetX: 200, ScaleX: 1, ScaleY: 1, Positioning: "oneCell"},
-		{Name: "Picture 9", PrintObject: boolPtr(true), Locked: boolPtr(true), AltText: "Excel Logo", LockAspectRatio: true, ScaleX: 1, ScaleY: 1},
+		{Name: "Picture 4", PrintObject: new(true), Locked: new(true), OffsetX: 200, ScaleX: 1, ScaleY: 1, Positioning: "oneCell"},
+		{Name: "Picture 9", PrintObject: new(true), Locked: new(true), AltText: "Excel Logo", LockAspectRatio: true, ScaleX: 1, ScaleY: 1},
 	}
 	assert.NoError(t, f.AddPicture("Sheet2", "I9", filepath.Join("test", "images", "excel.jpg"), &opts[0]))
 	// Test add picture to worksheet with offset, external hyperlink and positioning
@@ -368,7 +368,7 @@ func TestGetPicture(t *testing.T) {
 func TestAddDrawingPicture(t *testing.T) {
 	// Test addDrawingPicture with illegal cell reference
 	f := NewFile()
-	opts := &GraphicOptions{PrintObject: boolPtr(true), Locked: boolPtr(false)}
+	opts := &GraphicOptions{PrintObject: new(true), Locked: new(false)}
 	assert.EqualError(t, f.addDrawingPicture("sheet1", "", "A", "", 0, 0, image.Config{}, opts), newCellNameToCoordinatesError("A", newInvalidCellNameError("A")).Error())
 	// Test addDrawingPicture with invalid positioning types
 	assert.Equal(t, newInvalidOptionalValue("Positioning", "x", supportedPositioning),
@@ -387,7 +387,7 @@ func TestAddPictureFromBytes(t *testing.T) {
 	assert.NoError(t, f.AddPictureFromBytes("Sheet1", "A1", &Picture{Extension: ".png", File: imgFile, Format: &GraphicOptions{AltText: strings.Repeat("\u4e00", MaxGraphicAltTextLength), Name: strings.Repeat("\u4e00", MaxGraphicNameLength)}}))
 	assert.NoError(t, f.AddPictureFromBytes("Sheet1", "A50", &Picture{Extension: ".png", File: imgFile, Format: &GraphicOptions{AltText: "logo"}}))
 	imageCount := 0
-	f.Pkg.Range(func(fileName, v interface{}) bool {
+	f.Pkg.Range(func(fileName, v any) bool {
 		if strings.Contains(fileName.(string), "media/image") {
 			imageCount++
 		}
@@ -569,7 +569,7 @@ func TestGetCellImages(t *testing.T) {
 		f.Pkg.Store(defaultXMLRdRichValueStructure, []byte(`<rvStructures><s t="_localImage"><k n="_rvRel:LocalImageIdentifier" t="i"/><k n="CalcOrigin" t="i"/><k n="Text" t="s"/></s></rvStructures>`))
 		f.Sheet.Store("xl/worksheets/sheet1.xml", &xlsxWorksheet{
 			SheetData: xlsxSheetData{Row: []xlsxRow{
-				{R: 1, C: []xlsxC{{R: "A1", T: "e", V: formulaErrorVALUE, Vm: uintPtr(1)}}},
+				{R: 1, C: []xlsxC{{R: "A1", T: "e", V: formulaErrorVALUE, Vm: new(uint(1))}}},
 			}},
 		})
 		return f

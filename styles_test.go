@@ -172,7 +172,7 @@ func TestSetConditionalFormat(t *testing.T) {
 	// Test creating a conditional format with a solid color data bar style
 	f := NewFile()
 	condFmts := []ConditionalFormatOptions{
-		{Type: "data_bar", BarColor: "A9D08E", BarSolid: true, Format: intPtr(0), Criteria: "=", MinType: "min", MaxType: "max"},
+		{Type: "data_bar", BarColor: "A9D08E", BarSolid: true, Format: new(0), Criteria: "=", MinType: "min", MaxType: "max"},
 	}
 	for _, ref := range []string{"A1:A2", "B1:B2"} {
 		assert.NoError(t, f.SetConditionalFormat("Sheet1", ref, condFmts))
@@ -645,9 +645,9 @@ func TestConditionalStyle(t *testing.T) {
 	style, err := f.GetConditionalStyle(idx)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, style)
-	_, err = f.NewConditionalStyle(&Style{DecimalPlaces: intPtr(4), NumFmt: 165, NegRed: true})
+	_, err = f.NewConditionalStyle(&Style{DecimalPlaces: new(4), NumFmt: 165, NegRed: true})
 	assert.NoError(t, err)
-	_, err = f.NewConditionalStyle(&Style{DecimalPlaces: intPtr(-1)})
+	_, err = f.NewConditionalStyle(&Style{DecimalPlaces: new(-1)})
 	assert.NoError(t, err)
 	expected = &Style{NumFmt: 1}
 	idx, err = f.NewConditionalStyle(expected)
@@ -684,7 +684,7 @@ func TestConditionalStyle(t *testing.T) {
 	assert.NoError(t, err)
 	f.Styles.Dxfs.Dxfs[0].Fill.PatternFill.PatternType = ""
 	f.Styles.Dxfs.Dxfs[0].Fill.PatternFill.FgColor = nil
-	f.Styles.Dxfs.Dxfs[0].Fill.PatternFill.BgColor = &xlsxColor{Theme: intPtr(6)}
+	f.Styles.Dxfs.Dxfs[0].Fill.PatternFill.BgColor = &xlsxColor{Theme: new(6)}
 	style, err = f.GetConditionalStyle(idx)
 	assert.NoError(t, err)
 	assert.Equal(t, "pattern", style.Fill.Type)
@@ -892,7 +892,7 @@ func TestGetStyle(t *testing.T) {
 	assert.Equal(t, *expected.DecimalPlaces, *style.DecimalPlaces)
 	assert.Equal(t, "[$$-409]#,##0.0000;[Red][$$-409]#,##0.0000", *style.CustomNumFmt)
 
-	for _, val := range [][]interface{}{
+	for _, val := range [][]any{
 		{"$#,##0", 0},
 		{"$#,##0.0", 1},
 		{"_($* #,##0_);_($* (#,##0);_($* \"-\"_);_(@_)", 0},
@@ -934,7 +934,7 @@ func TestGetStyle(t *testing.T) {
 	assert.Equal(t, "012345", f.getThemeColor(&xlsxColor{Indexed: 0}))
 
 	f.Styles.Fonts.Font[0].U = &attrValString{}
-	f.Styles.CellXfs.Xf[0].FontID = intPtr(0)
+	f.Styles.CellXfs.Xf[0].FontID = new(0)
 	style, err = f.GetStyle(styleID)
 	assert.NoError(t, err)
 	assert.Equal(t, "single", style.Font.Underline)

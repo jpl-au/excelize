@@ -203,12 +203,12 @@ func TestFormControl(t *testing.T) {
 					Text: "C1=A1+B1",
 				},
 			},
-			Format: GraphicOptions{PrintObject: boolPtr(true), Positioning: "absolute"},
+			Format: GraphicOptions{PrintObject: new(true), Positioning: "absolute"},
 		},
 		{
 			Cell: "A5", Type: FormControlCheckBox, Text: "Check Box 1",
 			Checked: true, Format: GraphicOptions{
-				PrintObject: boolPtr(false), Positioning: "oneCell",
+				PrintObject: new(false), Positioning: "oneCell",
 			},
 			Width: 140, Height: 60,
 		},
@@ -263,7 +263,7 @@ func TestFormControl(t *testing.T) {
 		assert.Equal(t, formCtrl.Text, result[i].Text)
 		assert.Equal(t, len(formCtrl.Paragraph), len(result[i].Paragraph))
 	}
-	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{CodeName: stringPtr("Sheet1")}))
+	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{CodeName: new("Sheet1")}))
 	file, err := os.ReadFile(filepath.Join("test", "vbaProject.bin"))
 	assert.NoError(t, err)
 	assert.NoError(t, f.AddVBAProject(file))
@@ -446,7 +446,7 @@ func TestAddHeaderFooterImage(t *testing.T) {
 		FirstFooter:    "&L&GExcelize&C&G&R&G",
 	}
 	assert.NoError(t, f.SetHeaderFooter(sheet, &headerFooterOptions))
-	assert.NoError(t, f.SetSheetView(sheet, -1, &ViewOptions{View: stringPtr("pageLayout")}))
+	assert.NoError(t, f.SetSheetView(sheet, -1, &ViewOptions{View: new("pageLayout")}))
 	images := map[string][]byte{
 		".wmf": nil, ".tif": nil, ".png": nil,
 		".jpg": nil, ".gif": nil, ".emz": nil, ".emf": nil,

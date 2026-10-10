@@ -488,7 +488,7 @@ func TestPivotTable(t *testing.T) {
 
 	t.Run("shared_items_with_mixed_types", func(t *testing.T) {
 		f := NewFile()
-		for r, row := range [][]interface{}{
+		for r, row := range [][]any{
 			{"Type", "Value"},
 			{"Blank"},
 			{"Blank"},

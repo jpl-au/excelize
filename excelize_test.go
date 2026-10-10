@@ -872,11 +872,11 @@ func TestSetCellStyleCurrencyNumberFormat(t *testing.T) {
 		assert.NoError(t, f.SetCellValue("Sheet1", "A1", 56))
 		assert.NoError(t, f.SetCellValue("Sheet1", "A2", -32.3))
 		var style int
-		style, err = f.NewStyle(&Style{NumFmt: 188, DecimalPlaces: intPtr(-1)})
+		style, err = f.NewStyle(&Style{NumFmt: 188, DecimalPlaces: new(-1)})
 		assert.NoError(t, err)
 
 		assert.NoError(t, f.SetCellStyle("Sheet1", "A1", "A1", style))
-		style, err = f.NewStyle(&Style{NumFmt: 188, DecimalPlaces: intPtr(31), NegRed: true})
+		style, err = f.NewStyle(&Style{NumFmt: 188, DecimalPlaces: new(31), NegRed: true})
 		assert.NoError(t, err)
 
 		assert.NoError(t, f.SetCellStyle("Sheet1", "A2", "A2", style))
@@ -912,7 +912,7 @@ func TestSetCellStyleCurrencyNumberFormat(t *testing.T) {
 
 func TestSetCellStyleLangNumberFormat(t *testing.T) {
 	rawCellValues := make([][]string, 42)
-	for i := 0; i < 42; i++ {
+	for i := range 42 {
 		rawCellValues[i] = []string{"45162"}
 	}
 	for lang, expected := range map[CultureName][][]string{
@@ -1344,13 +1344,13 @@ func TestSetSheetCol(t *testing.T) {
 	f, err := OpenFile(filepath.Join("test", "Book1.xlsx"))
 	assert.NoError(t, err)
 
-	assert.NoError(t, f.SetSheetCol("Sheet1", "B27", &[]interface{}{"cell", nil, int32(42), float64(42), time.Now().UTC()}))
+	assert.NoError(t, f.SetSheetCol("Sheet1", "B27", &[]any{"cell", nil, int32(42), float64(42), time.Now().UTC()}))
 
-	assert.EqualError(t, f.SetSheetCol("Sheet1", "", &[]interface{}{"cell", nil, 2}),
+	assert.EqualError(t, f.SetSheetCol("Sheet1", "", &[]any{"cell", nil, 2}),
 		newCellNameToCoordinatesError("", newInvalidCellNameError("")).Error())
 	// Test set worksheet column values with invalid sheet name
-	assert.EqualError(t, f.SetSheetCol("Sheet:1", "A1", &[]interface{}{nil}), ErrSheetNameInvalid.Error())
-	assert.EqualError(t, f.SetSheetCol("Sheet1", "B27", []interface{}{}), ErrParameterInvalid.Error())
+	assert.EqualError(t, f.SetSheetCol("Sheet:1", "A1", &[]any{nil}), ErrSheetNameInvalid.Error())
+	assert.EqualError(t, f.SetSheetCol("Sheet1", "B27", []any{}), ErrParameterInvalid.Error())
 	assert.EqualError(t, f.SetSheetCol("Sheet1", "B27", &f), ErrParameterInvalid.Error())
 	assert.NoError(t, f.SaveAs(filepath.Join("test", "TestSetSheetCol.xlsx")))
 	assert.NoError(t, f.Close())
@@ -1360,13 +1360,13 @@ func TestSetSheetRow(t *testing.T) {
 	f, err := OpenFile(filepath.Join("test", "Book1.xlsx"))
 	assert.NoError(t, err)
 
-	assert.NoError(t, f.SetSheetRow("Sheet1", "B27", &[]interface{}{"cell", nil, int32(42), float64(42), time.Now().UTC()}))
+	assert.NoError(t, f.SetSheetRow("Sheet1", "B27", &[]any{"cell", nil, int32(42), float64(42), time.Now().UTC()}))
 
-	assert.EqualError(t, f.SetSheetRow("Sheet1", "", &[]interface{}{"cell", nil, 2}),
+	assert.EqualError(t, f.SetSheetRow("Sheet1", "", &[]any{"cell", nil, 2}),
 		newCellNameToCoordinatesError("", newInvalidCellNameError("")).Error())
 	// Test set worksheet row with invalid sheet name
-	assert.EqualError(t, f.SetSheetRow("Sheet:1", "A1", &[]interface{}{1}), ErrSheetNameInvalid.Error())
-	assert.EqualError(t, f.SetSheetRow("Sheet1", "B27", []interface{}{}), ErrParameterInvalid.Error())
+	assert.EqualError(t, f.SetSheetRow("Sheet:1", "A1", &[]any{1}), ErrSheetNameInvalid.Error())
+	assert.EqualError(t, f.SetSheetRow("Sheet1", "B27", []any{}), ErrParameterInvalid.Error())
 	assert.EqualError(t, f.SetSheetRow("Sheet1", "B27", &f), ErrParameterInvalid.Error())
 	assert.NoError(t, f.SaveAs(filepath.Join("test", "TestSetSheetRow.xlsx")))
 	assert.NoError(t, f.Close())
@@ -1573,7 +1573,7 @@ func TestAddVBAProject(t *testing.T) {
 	f := NewFile()
 	file, err := os.ReadFile(filepath.Join("test", "Book1.xlsx"))
 	assert.NoError(t, err)
-	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{CodeName: stringPtr("Sheet1")}))
+	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{CodeName: new("Sheet1")}))
 	assert.EqualError(t, f.AddVBAProject(file), ErrAddVBAProject.Error())
 	file, err = os.ReadFile(filepath.Join("test", "vbaProject.bin"))
 	assert.NoError(t, err)

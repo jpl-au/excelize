@@ -494,7 +494,7 @@ func (si *xlsxSharedItems) addStringItem(val string) {
 		}
 	}
 	si.Items = append(si.Items, xlsxSharedItem{XMLName: xml.Name{Local: "s"}, V: val})
-	si.ContainsString = boolPtr(true)
+	si.ContainsString = new(true)
 }
 
 // checkSelectedItems check whether the selected items exist in shared items.
@@ -586,17 +586,17 @@ func (f *File) buildPivotSharedItems(opts *PivotTableOptions, idx int, coordinat
 	i := 0
 	for _, item := range sharedItems.Items {
 		if len(field.SelectedItems) == 0 {
-			items = append(items, &xlsxItem{H: false, X: intPtr(i)})
+			items = append(items, &xlsxItem{H: false, X: new(i)})
 			i++
 			continue
 		}
 		switch item.XMLName.Local {
 		case "m":
-			items = append(items, &xlsxItem{H: inStrSlice(field.SelectedItems, "", true) == -1, X: intPtr(i)})
+			items = append(items, &xlsxItem{H: inStrSlice(field.SelectedItems, "", true) == -1, X: new(i)})
 		case "b":
-			items = append(items, &xlsxItem{H: inStrSlice(field.SelectedItems, item.V, false) == -1, X: intPtr(i)})
+			items = append(items, &xlsxItem{H: inStrSlice(field.SelectedItems, item.V, false) == -1, X: new(i)})
 		case "n", "e", "s", "d":
-			items = append(items, &xlsxItem{H: inStrSlice(field.SelectedItems, item.V, true) == -1, X: intPtr(i)})
+			items = append(items, &xlsxItem{H: inStrSlice(field.SelectedItems, item.V, true) == -1, X: new(i)})
 		}
 		i++
 	}
@@ -614,8 +614,8 @@ func (f *File) buildPivotSharedItems(opts *PivotTableOptions, idx int, coordinat
 	sharedItems.ContainsMixedTypes = len(typesSet) > 1
 	if numCount == i {
 		sharedItems.ContainsInteger = true
-		sharedItems.ContainsString = boolPtr(false)
-		sharedItems.ContainsSemiMixedTypes = boolPtr(false)
+		sharedItems.ContainsString = new(false)
+		sharedItems.ContainsSemiMixedTypes = new(false)
 	}
 	sharedItems.Count = i
 
@@ -790,7 +790,7 @@ func (f *File) addPivotTable(cacheID, pivotTableID int, opts *PivotTableOptions)
 
 	// set classic layout
 	if opts.ClassicLayout {
-		pt.Compact, pt.CompactData = boolPtr(false), boolPtr(false)
+		pt.Compact, pt.CompactData = new(false), new(false)
 	}
 
 	// pivot fields
@@ -929,7 +929,7 @@ func (df *xlsxDataField) setPivotTableShowValuesAs(idx int, order []string, opts
 			return newPivotTableShowValuesAsBaseFieldError(baseField)
 		}
 		baseFieldIndex := inStrSlice(order, baseField, true)
-		df.BaseField = intPtr(baseFieldIndex)
+		df.BaseField = new(baseFieldIndex)
 		if pivotTableShowValuesAsBaseItemRequiredMap[showValuesAsType] {
 			if err := df.setPivotTableShowValuesAsBaseItem(baseField, opts.Data[idx].ShowValuesAs.BaseItem, &sharedItems); err != nil {
 				return err
@@ -953,11 +953,11 @@ func (df *xlsxDataField) setPivotTableShowValuesAsBaseItem(baseField, baseItem s
 		switch item.XMLName.Local {
 		case "b":
 			if strings.EqualFold(item.V, baseItem) {
-				df.BaseItem = intPtr(i)
+				df.BaseItem = new(i)
 			}
 		case "n", "e", "s", "d":
 			if item.V == baseItem {
-				df.BaseItem = intPtr(i)
+				df.BaseItem = new(i)
 			}
 		}
 	}
@@ -1021,7 +1021,7 @@ func (f *File) addPivotColFields(pt *xlsxPivotTableDefinition, opts *PivotTableO
 // setting Compact and Outline to false.
 func (fld *xlsxPivotField) setClassicLayout(classicLayout bool) {
 	if classicLayout {
-		fld.Compact, fld.Outline = boolPtr(false), boolPtr(false)
+		fld.Compact, fld.Outline = new(false), new(false)
 	}
 }
 
@@ -1125,7 +1125,7 @@ func (f *File) addPivotFields(pt *xlsxPivotTableDefinition, opts *PivotTableOpti
 // in the folder xl/pivotTables.
 func (f *File) countPivotTables() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/pivotTables/pivotTable") {
 			count++
 		}
@@ -1138,7 +1138,7 @@ func (f *File) countPivotTables() int {
 // count storage in the folder xl/pivotCache.
 func (f *File) countPivotCache() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/pivotCache/pivotCacheDefinition") {
 			count++
 		}
@@ -1531,7 +1531,7 @@ func (f *File) genPivotCacheDefinitionID() int {
 		decodeExtLst                  = new(decodeExtLst)
 		decodeX14PivotCacheDefinition = new(decodeX14PivotCacheDefinition)
 	)
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/pivotCache/pivotCacheDefinition") {
 			pc, err := f.pivotCacheReader(k.(string))
 			if err != nil {

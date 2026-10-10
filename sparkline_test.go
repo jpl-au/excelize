@@ -18,7 +18,7 @@ func TestAddSparkline(t *testing.T) {
 	assert.NoError(t, f.SetCellStyle("Sheet1", "A1", "B1", style))
 	viewOpts, err := f.GetSheetView("Sheet1", 0)
 	assert.NoError(t, err)
-	viewOpts.ZoomScale = float64Ptr(150)
+	viewOpts.ZoomScale = new(float64(150))
 	assert.NoError(t, f.SetSheetView("Sheet1", 0, &viewOpts))
 
 	assert.NoError(t, f.SetColWidth("Sheet1", "A", "A", 14))

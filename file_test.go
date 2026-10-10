@@ -194,7 +194,7 @@ func TestZip64(t *testing.T) {
 	sw, err := f.NewStreamWriter("Sheet1")
 	assert.NoError(t, err)
 	for r := range 131 {
-		rowData := make([]interface{}, 1000)
+		rowData := make([]any, 1000)
 		for c := range 1000 {
 			rowData[c] = strings.Repeat("c", TotalCellChars)
 		}

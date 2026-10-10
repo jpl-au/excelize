@@ -389,7 +389,7 @@ func TestSetColStyle(t *testing.T) {
 
 	// Test set column style with worksheet properties columns default width settings
 	f = NewFile()
-	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{DefaultColWidth: float64Ptr(20)}))
+	assert.NoError(t, f.SetSheetProps("Sheet1", &SheetPropsOptions{DefaultColWidth: new(float64(20))}))
 	style, err = f.NewStyle(&Style{Alignment: &Alignment{Vertical: "center"}})
 	assert.NoError(t, err)
 	assert.NoError(t, f.SetColStyle("Sheet1", "A:Z", style))
@@ -441,7 +441,7 @@ func TestColWidth(t *testing.T) {
 		f := NewFile()
 		ws, err := f.workSheetReader("Sheet1")
 		assert.NoError(t, err)
-		ws.Cols = &xlsxCols{Col: []xlsxCol{{Min: 0, Max: MaxColumns + 1, Width: float64Ptr(9)}}}
+		ws.Cols = &xlsxCols{Col: []xlsxCol{{Min: 0, Max: MaxColumns + 1, Width: new(float64(9))}}}
 		assert.NoError(t, f.SetColWidth("Sheet1", "A", "A", 12))
 		assert.Equal(t, len(ws.Cols.Col), MaxColumns)
 		width, err := f.GetColWidth("Sheet1", "A")
@@ -536,7 +536,7 @@ func TestAutoFitColWidth(t *testing.T) {
 	visible, err = f.GetColVisible("Sheet1", "C")
 	assert.NoError(t, err)
 	assert.True(t, visible)
-	styleID, err := f.NewStyle(&Style{Font: &Font{Family: "Microsoft YaHei", Bold: true, Italic: true, Charset: intPtr(134)}})
+	styleID, err := f.NewStyle(&Style{Font: &Font{Family: "Microsoft YaHei", Bold: true, Italic: true, Charset: new(134)}})
 	assert.NoError(t, err)
 	assert.NoError(t, f.SetColStyle("Sheet1", "D", styleID))
 	assert.NoError(t, f.SetCellValue("Sheet1", "D1", 1234567890))

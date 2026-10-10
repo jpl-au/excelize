@@ -13,16 +13,16 @@ func TestSetView(t *testing.T) {
 	assert.True(t, ok)
 	ws.(*xlsxWorksheet).SheetViews = nil
 	expected := ViewOptions{
-		DefaultGridColor:  boolPtr(false),
-		RightToLeft:       boolPtr(false),
-		ShowFormulas:      boolPtr(false),
-		ShowGridLines:     boolPtr(false),
-		ShowRowColHeaders: boolPtr(false),
-		ShowRuler:         boolPtr(false),
-		ShowZeros:         boolPtr(false),
-		TopLeftCell:       stringPtr("A1"),
-		View:              stringPtr("normal"),
-		ZoomScale:         float64Ptr(120),
+		DefaultGridColor:  new(false),
+		RightToLeft:       new(false),
+		ShowFormulas:      new(false),
+		ShowGridLines:     new(false),
+		ShowRowColHeaders: new(false),
+		ShowRuler:         new(false),
+		ShowZeros:         new(false),
+		TopLeftCell:       new("A1"),
+		View:              new("normal"),
+		ZoomScale:         new(float64(120)),
 	}
 	assert.NoError(t, f.SetSheetView("Sheet1", 0, &expected))
 	opts, err := f.GetSheetView("Sheet1", 0)

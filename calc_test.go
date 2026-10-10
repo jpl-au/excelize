@@ -11,7 +11,7 @@ import (
 	"github.com/xuri/efp"
 )
 
-func prepareCalcData(cellData [][]interface{}) *File {
+func prepareCalcData(cellData [][]any) *File {
 	f := NewFile()
 	for r, row := range cellData {
 		for c, value := range row {
@@ -23,7 +23,7 @@ func prepareCalcData(cellData [][]interface{}) *File {
 }
 
 func TestCalcCellValue(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{1, 4, nil, "Month", "Team", "Sales"},
 		{2, 5, nil, "Jan", "North 1", 36693, 4},
 		{3, nil, nil, "Jan", "North 2", 22100, 2},
@@ -4942,7 +4942,7 @@ func TestCalcCellValue(t *testing.T) {
 }
 
 func TestCalcWithDefinedName(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"A1_as_string", "B1_as_string", 123, nil},
 	}
 	f := prepareCalcData(cellData)
@@ -4987,7 +4987,7 @@ func TestCalcWithDefinedName(t *testing.T) {
 		assert.NoError(t, f.SetSheetName("Sheet1", "Sheet 1"))
 		cells := []string{"A1", "A2", "A3", "A4"}
 		names := []string{"val1", "val2", "val3", "val4"}
-		for idx, v := range []interface{}{100, 20, 30, 5} {
+		for idx, v := range []any{100, 20, 30, 5} {
 			assert.NoError(t, f.SetCellValue("Sheet 1", cells[idx], v))
 		}
 		for idx, cell := range cells {
@@ -5217,7 +5217,7 @@ func TestCalcArrayFormula(t *testing.T) {
 }
 
 func TestCalcTRANSPOSE(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"a", "d"},
 		{"b", "e"},
 		{"c", "f"},
@@ -5232,7 +5232,7 @@ func TestCalcTRANSPOSE(t *testing.T) {
 }
 
 func TestCalcVLOOKUP(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{nil, nil, nil, nil, nil, nil},
 		{nil, "Score", "Grade", nil, nil, nil},
 		{nil, 0, "F", nil, "Score", 85},
@@ -5274,7 +5274,7 @@ func TestCalcVLOOKUP(t *testing.T) {
 }
 
 func TestCalcBoolean(t *testing.T) {
-	cellData := [][]interface{}{{0.5, "TRUE", -0.5, "FALSE", true}}
+	cellData := [][]any{{0.5, "TRUE", -0.5, "FALSE", true}}
 	f := prepareCalcData(cellData)
 	formulaList := map[string]string{
 		"ISNUMBER(E1)":     "FALSE",
@@ -5302,7 +5302,7 @@ func TestCalcBoolean(t *testing.T) {
 }
 
 func TestCalcMAXMIN(t *testing.T) {
-	cellData := [][]interface{}{{"1"}, {"2"}, {true}}
+	cellData := [][]any{{"1"}, {"2"}, {true}}
 	f := prepareCalcData(cellData)
 	formulaList := map[string]string{
 		"MAX(A1:A3)":  "0",
@@ -5319,7 +5319,7 @@ func TestCalcMAXMIN(t *testing.T) {
 }
 
 func TestCalcAVERAGEIF(t *testing.T) {
-	f := prepareCalcData([][]interface{}{
+	f := prepareCalcData([][]any{
 		{"Monday", 500},
 		{"Tuesday", 50},
 		{"Thursday", 100},
@@ -5350,7 +5350,7 @@ func TestCalcAVERAGEIF(t *testing.T) {
 }
 
 func TestCalcCOVAR(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"array1", "array2"},
 		{2, 22.9},
 		{7, 33.49},
@@ -5393,7 +5393,7 @@ func TestCalcCOVAR(t *testing.T) {
 }
 
 func TestCalcUniqueExactlyOnce(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Customer name"},
 		{"Fife, Grant"},
 		{"Pruitt, Barbara"},
@@ -5423,7 +5423,7 @@ func TestCalcUniqueExactlyOnce(t *testing.T) {
 }
 
 func TestCalcUniqueMultiColumn(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Player name", "Gender", "Nickname"},
 		{"Tom", "M", "Tom"},
 		{"Fred", "M", "Fred"},
@@ -5448,7 +5448,7 @@ func TestCalcUniqueMultiColumn(t *testing.T) {
 }
 
 func TestCalcUniqueErrors(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Player name", "Gender", "Nickname"},
 		{"Tom", "M", "Tom"},
 		{"Fred", "M", "Fred"},
@@ -5487,7 +5487,7 @@ func TestGetFormulaUniqueArgs(t *testing.T) {
 }
 
 func TestCalcDatabase(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Tree", "Height", "Age", "Yield", "Profit", "Height"},
 		{nil, ">1000%", nil, nil, nil, "<16"},
 		{},
@@ -5598,7 +5598,7 @@ func TestCalcFORMULATEXT(t *testing.T) {
 }
 
 func TestCalcGROWTHandTREND(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"known_x's", "known_y's", 0, -1},
 		{1, 10, 1},
 		{2, 20, 1},
@@ -5676,7 +5676,7 @@ func TestCalcGROWTHandTREND(t *testing.T) {
 }
 
 func TestCalcHLOOKUP(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Example Result Table"},
 		{nil, "A", "B", "C", "E", "F"},
 		{"Math", .58, .9, .67, .76, .8},
@@ -5715,7 +5715,7 @@ func TestCalcHLOOKUP(t *testing.T) {
 }
 
 func TestCalcCHITESTandCHISQdotTEST(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{nil, "Observed Frequencies", nil, nil, "Expected Frequencies"},
 		{nil, "men", "women", nil, nil, "men", "women"},
 		{"answer a", 33, 39, nil, "answer a", 26.25, 31.5},
@@ -5762,7 +5762,7 @@ func TestCalcCHITESTandCHISQdotTEST(t *testing.T) {
 }
 
 func TestCalcFTEST(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Group 1", "Group 2"},
 		{3.5, 9.2},
 		{4.7, 8.2},
@@ -5807,7 +5807,7 @@ func TestCalcFTEST(t *testing.T) {
 }
 
 func TestCalcIRR(t *testing.T) {
-	cellData := [][]interface{}{{-1}, {0.2}, {0.24}, {0.288}, {0.3456}, {0.4147}}
+	cellData := [][]any{{-1}, {0.2}, {0.24}, {0.288}, {0.3456}, {0.4147}}
 	f := prepareCalcData(cellData)
 	formulaList := map[string]string{
 		"IRR(A1:A4)":      "-0.136189509034157",
@@ -5836,7 +5836,7 @@ func TestCalcIRR(t *testing.T) {
 
 func TestCalcMAXMINIFS(t *testing.T) {
 	f := NewFile()
-	for cell, row := range map[string][]interface{}{
+	for cell, row := range map[string][]any{
 		"A1": {1, -math.MaxFloat64 - 1},
 		"A2": {2, -math.MaxFloat64 - 2},
 		"A3": {3, math.MaxFloat64 + 1},
@@ -5859,7 +5859,7 @@ func TestCalcMAXMINIFS(t *testing.T) {
 }
 
 func TestCalcMIRR(t *testing.T) {
-	cellData := [][]interface{}{{-100}, {18}, {22.5}, {28}, {35.5}, {45}}
+	cellData := [][]any{{-100}, {18}, {22.5}, {28}, {35.5}, {45}}
 	f := prepareCalcData(cellData)
 	formulaList := map[string]string{
 		"MIRR(A1:A6,0.055,0.05)": "0.1000268752662",
@@ -5885,7 +5885,7 @@ func TestCalcMIRR(t *testing.T) {
 }
 
 func TestCalcSUMIFSAndAVERAGEIFS(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Quarter", "Area", "Sales Rep.", "Sales"},
 		{1, "North", "Jeff", 223000},
 		{1, "North", "Chris", 125000},
@@ -5936,7 +5936,7 @@ func TestCalcSUMIFSAndAVERAGEIFS(t *testing.T) {
 }
 
 func TestCalcSUMIFExactMatch(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Category", "Amount"},
 		{"text", 100},
 		{"***_***_text", 200},
@@ -5974,7 +5974,7 @@ func TestCalcSUMIFExactMatch(t *testing.T) {
 		assert.NoError(t, err, formula)
 		assert.Equal(t, expected, result, formula)
 	}
-	cellData = [][]interface{}{
+	cellData = [][]any{
 		{"Category", "Amount"},
 		{"text", 10},
 		{"***text", 20},
@@ -5999,7 +5999,7 @@ func TestCalcSUMIFExactMatch(t *testing.T) {
 }
 
 func TestCalcXIRR(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{-100.00, 42370},
 		{20.00, 42461},
 		{40.00, 42644},
@@ -6037,7 +6037,7 @@ func TestCalcXIRR(t *testing.T) {
 }
 
 func TestCalcXLOOKUP(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{},
 		{nil, nil, "Quarter", "Gross Profit", "Net profit", "Profit %"},
 		{nil, nil, "Qtr1", nil, 19342, 29.30},
@@ -6093,7 +6093,7 @@ func TestCalcXLOOKUP(t *testing.T) {
 		assert.EqualError(t, err, expected[1], formula)
 	}
 
-	cellData = [][]interface{}{
+	cellData = [][]any{
 		{"Salesperson", "Item", "Amont"},
 		{"B", "Apples", 30, 25, 15, 50, 45, 18},
 		{"L", "Oranges", 25, "D3", "E3"},
@@ -6144,7 +6144,7 @@ func TestCalcXLOOKUP(t *testing.T) {
 }
 
 func TestCalcXNPV(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{nil, 0.05},
 		{42370, -10000, nil},
 		{42401, 2000},
@@ -6187,7 +6187,7 @@ func TestCalcXNPV(t *testing.T) {
 
 func TestCalcMATCH(t *testing.T) {
 	f := NewFile()
-	for cell, row := range map[string][]interface{}{
+	for cell, row := range map[string][]any{
 		"A1": {"cccc", 7, 4, 16},
 		"A2": {"dddd", 2, 6, 11},
 		"A3": {"aaaa", 4, 7, 10},
@@ -6240,7 +6240,7 @@ func TestCalcISFORMULA(t *testing.T) {
 }
 
 func TestCalcMODE(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{1, 1},
 		{1, 1},
 		{2, 2},
@@ -6286,7 +6286,7 @@ func TestCalcMODE(t *testing.T) {
 }
 
 func TestCalcPEARSON(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"x", "y"},
 		{1, 10.11},
 		{2, 22.9},
@@ -6323,7 +6323,7 @@ func TestCalcPEARSON(t *testing.T) {
 }
 
 func TestCalcPROB(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"x", "probability"},
 		{0, 0.1},
 		{1, 0.15},
@@ -6359,7 +6359,7 @@ func TestCalcPROB(t *testing.T) {
 }
 
 func TestCalcRSQ(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"known_y's", "known_x's"},
 		{2, 22.9},
 		{7, 33.49},
@@ -6383,7 +6383,7 @@ func TestCalcRSQ(t *testing.T) {
 }
 
 func TestCalcSLOP(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"known_x's", "known_y's"},
 		{1, 3},
 		{2, 7},
@@ -6438,7 +6438,7 @@ func TestCalcSHEETS(t *testing.T) {
 }
 
 func TestCalcSTEY(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"known_x's", "known_y's"},
 		{1, 3},
 		{2, 7.9},
@@ -6474,7 +6474,7 @@ func TestCalcSTEY(t *testing.T) {
 }
 
 func TestCalcTTEST(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{4, 8, nil, 1, 1},
 		{5, 3, nil, 1, 1},
 		{2, 7},
@@ -6544,7 +6544,7 @@ func TestCalcTTEST(t *testing.T) {
 }
 
 func TestCalcNETWORKDAYSandWORKDAY(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"05/01/2019", 43586, "text1"},
 		{"09/13/2019", 43721, "text2"},
 		{"10/01/2019", 43739},
@@ -7043,8 +7043,8 @@ func TestCalcCellValueCache(t *testing.T) {
 				runs := []RichTextRun{{Text: "Rich", Font: &Font{Bold: true}}}
 				return f.SetCellRichText("Sheet1", "B10", runs)
 			}},
-			{"SetSheetRow", func() error { return f.SetSheetRow("Sheet1", "C1", &[]interface{}{1, 2, 3}) }},
-			{"SetSheetCol", func() error { return f.SetSheetCol("Sheet1", "D1", &[]interface{}{4, 5, 6}) }},
+			{"SetSheetRow", func() error { return f.SetSheetRow("Sheet1", "C1", &[]any{1, 2, 3}) }},
+			{"SetSheetCol", func() error { return f.SetSheetCol("Sheet1", "D1", &[]any{4, 5, 6}) }},
 		}
 		for _, tc := range cases {
 			t.Run(tc.name, func(t *testing.T) {
@@ -7103,7 +7103,7 @@ func TestCalcMatchMatrix(t *testing.T) {
 }
 
 func TestCalcSORTBY(t *testing.T) {
-	cellData := [][]interface{}{
+	cellData := [][]any{
 		{"Name", "Region", "Sales", "Quarter"},
 		{"Alice", "North", 1500, 1},
 		{"Bob", "South", 2000, 2},
@@ -7149,7 +7149,7 @@ func TestCalcSORTBY(t *testing.T) {
 		assert.Equal(t, expected[0], result, formula)
 	}
 
-	f = prepareCalcData([][]interface{}{
+	f = prepareCalcData([][]any{
 		{"Name", "Score"},
 		{"Alice", 100},
 	})
@@ -7158,7 +7158,7 @@ func TestCalcSORTBY(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Alice", result, "Single row should work")
 
-	f = prepareCalcData([][]interface{}{
+	f = prepareCalcData([][]any{
 		{"Name", "Score"},
 		{"Alice", 100},
 		{"Bob", 100},
@@ -7169,7 +7169,7 @@ func TestCalcSORTBY(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Alice,Bob,Charlie", result, "Equal values maintain original order")
 
-	f = prepareCalcData([][]interface{}{
+	f = prepareCalcData([][]any{
 		{"Name", "Group", "Score"},
 		{"Charlie", "A", 90},
 		{"Alice", "A", 95},
@@ -7180,7 +7180,7 @@ func TestCalcSORTBY(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Bob,Charlie,Alice", result, "Second key determines order when first is equal")
 
-	f = prepareCalcData([][]interface{}{
+	f = prepareCalcData([][]any{
 		{"Name", "Score"},
 		{"Alice", 100},
 	})
@@ -7189,7 +7189,7 @@ func TestCalcSORTBY(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, formulaErrorVALUE, result)
 
-	f = prepareCalcData([][]interface{}{
+	f = prepareCalcData([][]any{
 		{"Name", "Score"},
 		{"Alice", 100},
 	})
@@ -7198,7 +7198,7 @@ func TestCalcSORTBY(t *testing.T) {
 	assert.Error(t, err)
 	assert.Equal(t, formulaErrorVALUE, result)
 
-	f = prepareCalcData([][]interface{}{
+	f = prepareCalcData([][]any{
 		{1, 2, 3},
 		{4, 5, 6},
 		{7, 8, 9},
@@ -7244,7 +7244,7 @@ func TestCalcTrendGrowthRegression(t *testing.T) {
 
 func TestCalcImplicitIntersect(t *testing.T) {
 	f := NewFile()
-	for cell, value := range map[string]interface{}{
+	for cell, value := range map[string]any{
 		"A1": -5, "A2": 10, "A3": -3, "A4": "text", "A5": 7, "D1": 1, "D2": 0, "D3": 1,
 	} {
 		assert.NoError(t, f.SetCellValue("Sheet1", cell, value))

@@ -30,7 +30,7 @@ func TestConcurrency(t *testing.T) {
 			_, err := f.GetCellValue("Sheet1", fmt.Sprintf("A%d", val))
 			assert.NoError(t, err)
 			// Concurrency set rows
-			assert.NoError(t, f.SetSheetRow("Sheet1", "B6", &[]interface{}{
+			assert.NoError(t, f.SetSheetRow("Sheet1", "B6", &[]any{
 				" Hello",
 				[]byte("World"), 42, int8(1<<8/2 - 1), int16(1<<16/2 - 1), int32(1<<32/2 - 1),
 				int64(1<<32/2 - 1), float32(42.65418), -42.65418, float32(42), float64(42),
@@ -214,7 +214,7 @@ func TestSetCellUint(t *testing.T) {
 
 func TestSetCellValuesMultiByte(t *testing.T) {
 	f := NewFile()
-	row := []interface{}{
+	row := []any{
 		// Test set cell value with multi byte characters value
 		strings.Repeat("\u4E00", TotalCellChars+1),
 		// Test set cell value with XML escape characters
@@ -765,7 +765,7 @@ func BenchmarkSetCellValue(b *testing.B) {
 	f := NewFile()
 	b.ResetTimer()
 	for i := 1; i <= b.N; i++ {
-		for j := 0; j < len(values); j++ {
+		for j := range values {
 			if err := f.SetCellValue("Sheet1", cols[j]+strconv.Itoa(i), values[j]); err != nil {
 				b.Error(err)
 			}
@@ -818,7 +818,7 @@ func TestSetCellFormula(t *testing.T) {
 	// Test set shared formula for the cells
 	f = NewFile()
 	for r := 1; r <= 5; r++ {
-		assert.NoError(t, f.SetSheetRow("Sheet1", fmt.Sprintf("A%d", r), &[]interface{}{r, r + 1}))
+		assert.NoError(t, f.SetSheetRow("Sheet1", fmt.Sprintf("A%d", r), &[]any{r, r + 1}))
 	}
 	formulaType, ref := STCellFormulaTypeShared, "C1:C5"
 	assert.NoError(t, f.SetCellFormula("Sheet1", "C1", "A1+B1", FormulaOpts{Ref: &ref, Type: &formulaType}))
@@ -835,7 +835,7 @@ func TestSetCellFormula(t *testing.T) {
 
 	// Test set table formula for the cells
 	f = NewFile()
-	for idx, row := range [][]interface{}{{"A", "B", "C"}, {1, 2}} {
+	for idx, row := range [][]any{{"A", "B", "C"}, {1, 2}} {
 		assert.NoError(t, f.SetSheetRow("Sheet1", fmt.Sprintf("A%d", idx+1), &row))
 	}
 	assert.NoError(t, f.AddTable("Sheet1", &Table{Range: "A1:C2", Name: "Table1", StyleName: "TableStyleMedium2"}))
@@ -1267,7 +1267,7 @@ func TestSharedStringsError(t *testing.T) {
 	assert.NoError(t, f.sharedStringTemp.Close())
 	assert.Error(t, f.Close())
 	// Cleanup undelete temporary files
-	f.tempFiles.Range(func(k, v interface{}) bool {
+	f.tempFiles.Range(func(k, v any) bool {
 		return assert.NoError(t, os.Remove(v.(string)))
 	})
 
@@ -1290,14 +1290,14 @@ func TestSharedStringsError(t *testing.T) {
 	assert.Error(t, f.SetCellValue("Sheet1", "A1", "A1"))
 	assert.Error(t, f.Close())
 	// Cleanup undelete temporary files
-	f.tempFiles.Range(func(k, v interface{}) bool {
+	f.tempFiles.Range(func(k, v any) bool {
 		return assert.NoError(t, os.Remove(v.(string)))
 	})
 }
 
 func TestSetCellIntFunc(t *testing.T) {
 	cases := []struct {
-		val    interface{}
+		val    any
 		target string
 	}{
 		{val: 128, target: "128"},

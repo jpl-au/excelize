@@ -88,14 +88,14 @@ func (f *File) SetSheetView(sheet string, viewIndex int, opts *ViewOptions) erro
 // negative and if so is counted backward (-1 is the last view).
 func (f *File) GetSheetView(sheet string, viewIndex int) (ViewOptions, error) {
 	opts := ViewOptions{
-		DefaultGridColor:  boolPtr(true),
-		ShowFormulas:      boolPtr(true),
-		ShowGridLines:     boolPtr(true),
-		ShowRowColHeaders: boolPtr(true),
-		ShowRuler:         boolPtr(true),
-		ShowZeros:         boolPtr(true),
-		View:              stringPtr("normal"),
-		ZoomScale:         float64Ptr(100),
+		DefaultGridColor:  new(true),
+		ShowFormulas:      new(true),
+		ShowGridLines:     new(true),
+		ShowRowColHeaders: new(true),
+		ShowRuler:         new(true),
+		ShowZeros:         new(true),
+		View:              new("normal"),
+		ZoomScale:         new(float64(100)),
 	}
 	view, err := f.getSheetView(sheet, viewIndex)
 	if err != nil {
@@ -104,8 +104,8 @@ func (f *File) GetSheetView(sheet string, viewIndex int) (ViewOptions, error) {
 	if view.DefaultGridColor != nil {
 		opts.DefaultGridColor = view.DefaultGridColor
 	}
-	opts.RightToLeft = boolPtr(view.RightToLeft)
-	opts.ShowFormulas = boolPtr(view.ShowFormulas)
+	opts.RightToLeft = new(view.RightToLeft)
+	opts.ShowFormulas = new(view.ShowFormulas)
 	if view.ShowGridLines != nil {
 		opts.ShowGridLines = view.ShowGridLines
 	}
@@ -118,12 +118,12 @@ func (f *File) GetSheetView(sheet string, viewIndex int) (ViewOptions, error) {
 	if view.ShowZeros != nil {
 		opts.ShowZeros = view.ShowZeros
 	}
-	opts.TopLeftCell = stringPtr(view.TopLeftCell)
+	opts.TopLeftCell = new(view.TopLeftCell)
 	if view.View != "" {
-		opts.View = stringPtr(view.View)
+		opts.View = new(view.View)
 	}
 	if view.ZoomScale >= 10 && view.ZoomScale <= 400 {
-		opts.ZoomScale = float64Ptr(view.ZoomScale)
+		opts.ZoomScale = new(view.ZoomScale)
 	}
 	return opts, err
 }

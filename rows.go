@@ -457,7 +457,7 @@ func (f *File) SetRowHeight(sheet string, row int, height float64) error {
 		ws.SheetData.Row[rowIdx].CustomHeight = false
 		return err
 	}
-	ws.SheetData.Row[rowIdx].Ht = float64Ptr(height)
+	ws.SheetData.Row[rowIdx].Ht = new(height)
 	ws.SheetData.Row[rowIdx].CustomHeight = true
 	return err
 }
@@ -810,7 +810,7 @@ func (f *File) duplicateConditionalFormat(ws *xlsxWorksheet, sheet string, row, 
 	for _, cf := range ws.ConditionalFormatting {
 		if cf != nil {
 			var SQRef []string
-			for _, ref := range strings.Split(cf.SQRef, " ") {
+			for ref := range strings.SplitSeq(cf.SQRef, " ") {
 				coordinates, err := duplicateSQRefHelper(row, row2, ref)
 				if err != nil {
 					return err
@@ -841,7 +841,7 @@ func (f *File) duplicateDataValidations(ws *xlsxWorksheet, sheet string, row, ro
 	for _, dv := range ws.DataValidations.DataValidation {
 		if dv != nil {
 			var SQRef []string
-			for _, ref := range strings.Split(dv.Sqref, " ") {
+			for ref := range strings.SplitSeq(dv.Sqref, " ") {
 				coordinates, err := duplicateSQRefHelper(row, row2, ref)
 				if err != nil {
 					return err

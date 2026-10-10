@@ -79,10 +79,10 @@ func (f *File) SetCalcProps(opts *CalcPropsOptions) error {
 		wb.CalcPr.CalcID = int(*opts.CalcID)
 	}
 	if opts.IterateCount != nil {
-		wb.CalcPr.IterateCount = intPtr(int(*opts.IterateCount))
+		wb.CalcPr.IterateCount = new(int(*opts.IterateCount))
 	}
 	if opts.ConcurrentManualCount != nil {
-		wb.CalcPr.ConcurrentManualCount = intPtr(int(*opts.ConcurrentManualCount))
+		wb.CalcPr.ConcurrentManualCount = new(int(*opts.ConcurrentManualCount))
 	}
 	return err
 }
@@ -99,12 +99,12 @@ func (f *File) GetCalcProps() (CalcPropsOptions, error) {
 	}
 	setPtrFieldsVal([]string{"Iterate", "CalcMode"}, reflect.ValueOf(*wb.CalcPr), reflect.ValueOf(&opts).Elem())
 	setPtrFields(reflect.ValueOf(*wb.CalcPr), reflect.ValueOf(&opts).Elem())
-	opts.CalcID = uintPtr(uint(wb.CalcPr.CalcID))
+	opts.CalcID = new(uint(wb.CalcPr.CalcID))
 	if wb.CalcPr.IterateCount != nil {
-		opts.IterateCount = uintPtr(uint(*wb.CalcPr.IterateCount))
+		opts.IterateCount = new(uint(*wb.CalcPr.IterateCount))
 	}
 	if wb.CalcPr.ConcurrentManualCount != nil {
-		opts.ConcurrentManualCount = uintPtr(uint(*wb.CalcPr.ConcurrentManualCount))
+		opts.ConcurrentManualCount = new(uint(*wb.CalcPr.ConcurrentManualCount))
 	}
 	return opts, err
 }

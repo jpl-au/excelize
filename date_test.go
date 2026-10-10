@@ -67,9 +67,9 @@ func TestTimeFromExcelTime(t *testing.T) {
 			assert.Equal(t, test.GoValue, timeFromExcelTime(test.ExcelValue, false))
 		})
 	}
-	for hour := 0; hour < 24; hour++ {
-		for minVal := 0; minVal < 60; minVal++ {
-			for sec := 0; sec < 60; sec++ {
+	for hour := range 24 {
+		for minVal := range 60 {
+			for sec := range 60 {
 				date := time.Date(2021, time.December, 30, hour, minVal, sec, 0, time.UTC)
 				// Test use 1900 date system
 				excel1900Time, err := timeToExcelTime(date, false)

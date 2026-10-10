@@ -33,10 +33,10 @@ var (
 func parseTableOptions(opts *Table) (*Table, error) {
 	var err error
 	if opts == nil {
-		return &Table{ShowRowStripes: boolPtr(true)}, err
+		return &Table{ShowRowStripes: new(true)}, err
 	}
 	if opts.ShowRowStripes == nil {
-		opts.ShowRowStripes = boolPtr(true)
+		opts.ShowRowStripes = new(true)
 	}
 	if err = checkDefinedName(opts.Name); err != nil {
 		return opts, err
@@ -83,7 +83,7 @@ func (f *File) AddTable(sheet string, table *Table) error {
 		return err
 	}
 	var exist bool
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/tables/table") {
 			var t xlsxTable
 			if err := f.xmlNewDecoder(bytes.NewReader(namespaceStrictToTransitional(v.([]byte)))).
@@ -220,7 +220,7 @@ func (f *File) getTables() (map[string][]Table, error) {
 // folder xl/tables.
 func (f *File) countTables() int {
 	count := 0
-	f.Pkg.Range(func(k, v interface{}) bool {
+	f.Pkg.Range(func(k, v any) bool {
 		if strings.Contains(k.(string), "xl/tables/tableSingleCells") {
 			var cells xlsxSingleXMLCells
 			if err := f.xmlNewDecoder(bytes.NewReader(namespaceStrictToTransitional(v.([]byte)))).
@@ -393,7 +393,7 @@ func (f *File) addTable(sheet, tableXML string, x1, y1, x2, y2, i int, opts *Tab
 	_ = f.setTableColumns(sheet, !hideHeaderRow, x1, y1, x2, &t)
 	if hideHeaderRow {
 		t.AutoFilter = nil
-		t.HeaderRowCount = intPtr(0)
+		t.HeaderRowCount = new(0)
 	}
 	table, err := xml.Marshal(t)
 	f.saveFileList(tableXML, table)
@@ -491,7 +491,7 @@ func (f *File) AutoFilter(sheet, rangeRef string, opts []AutoFilterOptions) erro
 	d := xlsxDefinedName{
 		Name:         builtInDefinedNames[3],
 		Hidden:       true,
-		LocalSheetID: intPtr(sheetID),
+		LocalSheetID: new(sheetID),
 		Data:         filterRange,
 	}
 	if wb.DefinedNames == nil {

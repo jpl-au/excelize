@@ -318,7 +318,7 @@ func TestAdjustTable(t *testing.T) {
 			StyleName:         "TableStyleMedium2",
 			ShowFirstColumn:   true,
 			ShowLastColumn:    true,
-			ShowRowStripes:    boolPtr(false),
+			ShowRowStripes:    new(false),
 			ShowColumnStripes: true,
 		}))
 	}
@@ -1003,7 +1003,7 @@ func TestAdjustVolatileDeps(t *testing.T) {
 
 func TestAdjustConditionalFormats(t *testing.T) {
 	f := NewFile()
-	assert.NoError(t, f.SetSheetRow("Sheet1", "B1", &[]interface{}{1, nil, 1, 1}))
+	assert.NoError(t, f.SetSheetRow("Sheet1", "B1", &[]any{1, nil, 1, 1}))
 	formatID, err := f.NewConditionalStyle(&Style{Font: &Font{Color: "09600B"}, Fill: Fill{Type: "pattern", Color: []string{"C7EECF"}, Pattern: 1}})
 	assert.NoError(t, err)
 	format := []ConditionalFormatOptions{
@@ -1104,7 +1104,7 @@ func TestAdjustDataValidations(t *testing.T) {
 	assert.NoError(t, f.AddChartSheet("Chart1", &Chart{Type: Line}))
 	_, err = f.NewSheet("Sheet2")
 	assert.NoError(t, err)
-	assert.NoError(t, f.SetSheetRow("Sheet2", "C1", &[]interface{}{1, 10}))
+	assert.NoError(t, f.SetSheetRow("Sheet2", "C1", &[]any{1, 10}))
 	dv = NewDataValidation(true)
 	dv.Sqref = "C5:D6"
 	assert.NoError(t, dv.SetRange("Sheet2!C1", "Sheet2!D1", DataValidationTypeWhole, DataValidationOperatorBetween))

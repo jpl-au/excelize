@@ -408,7 +408,7 @@ func (f *File) addDrawingShape(sheet, drawingXML, cell string, opts *Shape) erro
 			FontRef: &aFontRef{
 				Idx: "minor",
 				SchemeClr: &attrValString{
-					Val: stringPtr("tx1"),
+					Val: new("tx1"),
 				},
 			},
 		},
@@ -429,7 +429,7 @@ func (f *File) addDrawingShape(sheet, drawingXML, cell string, opts *Shape) erro
 	if opts.Fill.Transparency > 0 {
 		val := (100 - opts.Fill.Transparency) * 1000
 		shape.SpPr.SolidFill = &aSolidFill{SrgbClr: &aSrgbClr{
-			Val:   stringPtr(shapeColor),
+			Val:   new(shapeColor),
 			Alpha: &attrValInt{Val: &val},
 		}}
 	}
@@ -488,7 +488,7 @@ func (f *File) addDrawingShape(sheet, drawingXML, cell string, opts *Shape) erro
 		if len(srgbClr) == 6 {
 			paragraph.R.RPr.SolidFill = &aSolidFill{
 				SrgbClr: &aSrgbClr{
-					Val: stringPtr(srgbClr),
+					Val: new(srgbClr),
 				},
 			}
 		}
@@ -524,7 +524,7 @@ func setShapeRef(color string, i int) *aRef {
 	return &aRef{
 		Idx: i,
 		SrgbClr: &attrValString{
-			Val: stringPtr(strings.ReplaceAll(strings.ToUpper(color), "#", "")),
+			Val: new(strings.ReplaceAll(strings.ToUpper(color), "#", "")),
 		},
 	}
 }

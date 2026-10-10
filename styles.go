@@ -1002,7 +1002,7 @@ func (f *File) NewStyle(style *Style) (int, error) {
 		return cellXfsID, err
 	}
 	if fs.DecimalPlaces != nil && (*fs.DecimalPlaces < 0 || *fs.DecimalPlaces > 30) {
-		fs.DecimalPlaces = intPtr(2)
+		fs.DecimalPlaces = new(2)
 	}
 	f.mu.Lock()
 	s, err := f.stylesReader()
@@ -1745,7 +1745,7 @@ func (f *File) NewConditionalStyle(style *Style) (int, error) {
 		return 0, err
 	}
 	if fs.DecimalPlaces != nil && (*fs.DecimalPlaces < 0 || *fs.DecimalPlaces > 30) {
-		fs.DecimalPlaces = intPtr(2)
+		fs.DecimalPlaces = new(2)
 	}
 	dxf := xlsxDxf{
 		Fill: newFills(fs, false),
@@ -1855,7 +1855,7 @@ func (f *File) SetDefaultFont(fontName string) error {
 	if err != nil {
 		return err
 	}
-	font.Name.Val = stringPtr(fontName)
+	font.Name.Val = new(fontName)
 	f.mu.Lock()
 	s, _ := f.stylesReader()
 	f.mu.Unlock()
@@ -1923,12 +1923,12 @@ func newFontColor(font *Font) *xlsxColor {
 // newFont provides a function to add font style by given cell format
 // settings.
 func (fnt *Font) newFont() *xlsxFont {
-	font := xlsxFont{Family: &attrValInt{Val: intPtr(2)}}
+	font := xlsxFont{Family: &attrValInt{Val: new(2)}}
 	if fnt.Size >= MinFontSize {
-		font.Sz = &attrValFloat{Val: float64Ptr(fnt.Size)}
+		font.Sz = &attrValFloat{Val: new(fnt.Size)}
 	}
 	if fnt.Family != "" {
-		font.Name = &attrValString{Val: stringPtr(fnt.Family)}
+		font.Name = &attrValString{Val: new(fnt.Family)}
 	}
 	if fnt.Charset != nil {
 		font.Charset = &attrValInt{Val: fnt.Charset}
@@ -1944,7 +1944,7 @@ func (fnt *Font) newFont() *xlsxFont {
 		font.Strike = &attrValBool{Val: &fnt.Strike}
 	}
 	if idx := inStrSlice(supportedUnderlineTypes, fnt.Underline, true); idx != -1 {
-		font.U = &attrValString{Val: stringPtr(supportedUnderlineTypes[idx])}
+		font.U = &attrValString{Val: new(supportedUnderlineTypes[idx])}
 	}
 	if inStrSlice(supportedVertAlignTypes, fnt.VertAlign, true) != -1 {
 		font.VertAlign = &attrValString{Val: &fnt.VertAlign}
@@ -2208,21 +2208,21 @@ func newBorders(style *Style) *xlsxBorder {
 // cell.
 func setCellXfs(style *xlsxStyleSheet, fontID, numFmtID, fillID, borderID int, applyAlignment, applyProtection bool, alignment *xlsxAlignment, protection *xlsxProtection) (int, error) {
 	var xf xlsxXf
-	xf.FontID = intPtr(fontID)
+	xf.FontID = new(fontID)
 	if fontID != 0 {
-		xf.ApplyFont = boolPtr(true)
+		xf.ApplyFont = new(true)
 	}
-	xf.NumFmtID = intPtr(numFmtID)
+	xf.NumFmtID = new(numFmtID)
 	if numFmtID != 0 {
-		xf.ApplyNumberFormat = boolPtr(true)
+		xf.ApplyNumberFormat = new(true)
 	}
-	xf.FillID = intPtr(fillID)
+	xf.FillID = new(fillID)
 	if fillID != 0 {
-		xf.ApplyFill = boolPtr(true)
+		xf.ApplyFill = new(true)
 	}
-	xf.BorderID = intPtr(borderID)
+	xf.BorderID = new(borderID)
 	if borderID != 0 {
-		xf.ApplyBorder = boolPtr(true)
+		xf.ApplyBorder = new(true)
 	}
 	if len(style.CellXfs.Xf) == MaxCellStyles {
 		return 0, ErrCellStyles
@@ -2230,10 +2230,10 @@ func setCellXfs(style *xlsxStyleSheet, fontID, numFmtID, fillID, borderID int, a
 	style.CellXfs.Count = len(style.CellXfs.Xf) + 1
 	xf.Alignment = alignment
 	if alignment != nil {
-		xf.ApplyAlignment = boolPtr(applyAlignment)
+		xf.ApplyAlignment = new(applyAlignment)
 	}
 	if applyProtection {
-		xf.ApplyProtection = boolPtr(applyProtection)
+		xf.ApplyProtection = new(applyProtection)
 		xf.Protection = protection
 	}
 	xfID := 0
@@ -3581,7 +3581,7 @@ func drawCondFmtAboveAverage(p int, ct, ref, GUID string, format *ConditionalFor
 		Priority:     p + 1,
 		StopIfTrue:   format.StopIfTrue,
 		Type:         validType[format.Type],
-		AboveAverage: boolPtr(format.AboveAverage),
+		AboveAverage: new(format.AboveAverage),
 		DxfID:        format.Format,
 	}, nil
 }
@@ -3666,7 +3666,7 @@ func drawCondFmtDataBar(p int, ct, ref, GUID string, format *ConditionalFormatOp
 		StopIfTrue: format.StopIfTrue,
 		Type:       validType[format.Type],
 		DataBar: &xlsxDataBar{
-			ShowValue: boolPtr(!format.BarOnly),
+			ShowValue: new(!format.BarOnly),
 			Cfvo:      []*xlsxCfvo{{Type: format.MinType, Val: format.MinValue}, {Type: format.MaxType, Val: format.MaxValue}},
 			Color:     []*xlsxColor{{RGB: getPaletteColor(format.BarColor)}},
 		},
@@ -3741,7 +3741,7 @@ func drawCondFmtIconSet(p int, ct, ref, GUID string, format *ConditionalFormatOp
 		cfRule.Priority = p + 1
 		cfRule.IconSet.IconSet = format.IconStyle
 		cfRule.IconSet.Reverse = format.ReverseIcons
-		cfRule.IconSet.ShowValue = boolPtr(!format.IconsOnly)
+		cfRule.IconSet.ShowValue = new(!format.IconsOnly)
 		cfRule.Type = validType[format.Type]
 		return cfRule, nil
 	}
@@ -3749,12 +3749,12 @@ func drawCondFmtIconSet(p int, ct, ref, GUID string, format *ConditionalFormatOp
 		x14CfRule.Type = validType[format.Type]
 		x14CfRule.Priority = p + 1
 		x14CfRule.StopIfTrue = format.StopIfTrue
-		x14CfRule.AboveAverage = boolPtr(format.AboveAverage)
+		x14CfRule.AboveAverage = new(format.AboveAverage)
 		x14CfRule.Percent = format.Percent
 		x14CfRule.ID = GUID
 		x14CfRule.IconSet.IconSet = format.IconStyle
 		x14CfRule.IconSet.Reverse = format.ReverseIcons
-		x14CfRule.IconSet.ShowValue = boolPtr(!format.IconsOnly)
+		x14CfRule.IconSet.ShowValue = new(!format.IconsOnly)
 		return nil, x14CfRule
 	}
 	return nil, nil

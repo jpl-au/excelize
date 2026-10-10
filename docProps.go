@@ -293,18 +293,18 @@ func (f *File) SetCustomProps(prop CustomProperty) error {
 }
 
 // setCustomProps sets the custom property value based on its type.
-func (prop *xlsxProperty) setCustomProps(value interface{}) error {
+func (prop *xlsxProperty) setCustomProps(value any) error {
 	switch v := value.(type) {
 	case int32:
 		prop.I4 = &v
 	case float64:
-		prop.R8 = float64Ptr(v)
+		prop.R8 = new(v)
 	case bool:
-		prop.Bool = boolPtr(v)
+		prop.Bool = new(v)
 	case string:
-		prop.Lpwstr = stringPtr(value.(string))
+		prop.Lpwstr = new(value.(string))
 	case time.Time:
-		prop.FileTime = stringPtr(value.(time.Time).Format(time.RFC3339))
+		prop.FileTime = new(value.(time.Time).Format(time.RFC3339))
 	default:
 		return ErrParameterInvalid
 	}
@@ -331,7 +331,7 @@ func (f *File) GetCustomProps() ([]CustomProperty, error) {
 }
 
 // getCustomProps gets the custom property value based on its type.
-func (p *decodeProperty) getCustomProps() (interface{}, error) {
+func (p *decodeProperty) getCustomProps() (any, error) {
 	s := reflect.ValueOf(p).Elem()
 	for i := range s.NumField() {
 		if 11 <= i && i <= 20 && !s.Field(i).IsNil() {

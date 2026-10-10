@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1041,7 +1042,7 @@ func (f *File) evalInfixExp(ctx *calcContext, sheet, cell string, tokens []efp.T
 		opdStack, optStack, opfStack    = NewStack(), NewStack(), NewStack()
 		opfdStack, opftStack, argsStack = NewStack(), NewStack(), NewStack()
 	)
-	for i := 0; i < len(tokens); i++ {
+	for i := range tokens {
 		token := tokens[i]
 		if token.TType == efp.TokenTypeUnknown {
 			return newEmptyFormulaArg(), ErrInvalidFormula
@@ -1232,8 +1233,8 @@ func prepareEvalInfixExp(opfStack, opftStack, opfdStack, argsStack *Stack) {
 			argument = false
 		}
 		// Restore saved tokens
-		for i := len(savedTokens) - 1; i >= 0; i-- {
-			opftStack.Push(savedTokens[i])
+		for _, savedToken := range slices.Backward(savedTokens) {
+			opftStack.Push(savedToken)
 		}
 		opftStack.Push(topOpt)
 	}
@@ -1979,7 +1980,7 @@ func (f *File) rangeResolver(ctx *calcContext, cellRefs, cellRanges *list.List) 
 
 // callFuncByName calls the no error or only error return function with
 // reflect by given receiver, name and parameters.
-func callFuncByName(receiver interface{}, name string, params []reflect.Value) (arg formulaArg) {
+func callFuncByName(receiver any, name string, params []reflect.Value) (arg formulaArg) {
 	function := reflect.ValueOf(receiver).MethodByName(name)
 	if function.IsValid() {
 		rt := function.Call(params)
@@ -1996,8 +1997,8 @@ func callFuncByName(receiver interface{}, name string, params []reflect.Value) (
 func formulaCriteriaParser(exp formulaArg) *formulaCriteria {
 	prepareValue := func(cond string) (expected float64, err error) {
 		percentile := 1.0
-		if strings.HasSuffix(cond, "%") {
-			cond = strings.TrimSuffix(cond, "%")
+		if before, ok := strings.CutSuffix(cond, "%"); ok {
+			cond = before
 			percentile /= 100
 		}
 		if expected, err = strconv.ParseFloat(cond, 64); err != nil {
@@ -2497,8 +2498,8 @@ func cmplx2str(num complex128, suffix string) string {
 	c = strings.TrimPrefix(c, "-0+")
 	c = strings.TrimSuffix(c, ")")
 	c = strings.TrimPrefix(c, "0+")
-	if strings.HasPrefix(c, "0-") {
-		c = "-" + strings.TrimPrefix(c, "0-")
+	if after, ok := strings.CutPrefix(c, "0-"); ok {
+		c = "-" + after
 	}
 	c = strings.TrimPrefix(c, "0+")
 	c = strings.TrimSuffix(c, "+0i")
@@ -5063,7 +5064,7 @@ func cofactorMatrix(i, j int, A [][]float64) float64 {
 	}
 	var B [][]float64
 	B = append(B, A...)
-	for m := 0; m < N; m++ {
+	for m := range N {
 		for n := j + 1; n < N; n++ {
 			B[m][n-1] = B[m][n]
 		}
@@ -5081,11 +5082,11 @@ func cofactorMatrix(i, j int, A [][]float64) float64 {
 func adjugateMatrix(A [][]float64) (adjA [][]float64) {
 	N := len(A)
 	var B [][]float64
-	for i := 0; i < N; i++ {
+	for i := range N {
 		adjA = append(adjA, make([]float64, N))
-		for j := 0; j < N; j++ {
-			for m := 0; m < N; m++ {
-				for n := 0; n < N; n++ {
+		for j := range N {
+			for m := range N {
+				for n := range N {
 					for x := len(B); x <= m; x++ {
 						B = append(B, []float64{})
 					}
@@ -5115,7 +5116,7 @@ func (fn *formulaFuncs) MINVERSE(argsList *list.List) formulaArg {
 	}
 	if detM := det(numMtx); detM != 0 {
 		datM, invertM := 1/detM, adjugateMatrix(numMtx)
-		for i := 0; i < len(invertM); i++ {
+		for i := range invertM {
 			for j := 0; j < len(invertM[i]); j++ {
 				invertM[i][j] *= datM
 			}
@@ -5153,13 +5154,13 @@ func (fn *formulaFuncs) MMULT(argsList *list.List) formulaArg {
 	var numMtx [][]float64
 	var row1, row []float64
 	var sum float64
-	for i := 0; i < len(numMtx1); i++ {
+	for i := range numMtx1 {
 		numMtx = append(numMtx, []float64{})
 		row = []float64{}
 		row1 = numMtx1[i]
-		for j := 0; j < array2Cols; j++ {
+		for j := range array2Cols {
 			sum = 0
-			for k := 0; k < array2Rows; k++ {
+			for k := range array2Rows {
 				sum += row1[k] * numMtx2[k][j]
 			}
 			for l := len(row); l <= j; l++ {
@@ -6331,7 +6332,7 @@ func (fn *formulaFuncs) sumx(name string, argsList *list.List) formulaArg {
 		return newErrorFormulaArg(formulaErrorNA, formulaErrorNA)
 	}
 	result := 0.0
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if lhs, rhs := left[i].ToNumber(), right[i].ToNumber(); lhs.Number != 0 && rhs.Number != 0 {
 			switch name {
 			case "SUMX2MY2":
@@ -7115,14 +7116,14 @@ func pbeta(x, pin, qin float64) (ans float64) {
 func betainvProbIterator(alpha1, alpha3, beta1, beta2, beta3, logBeta, maxCumulative, prob1, prob2 float64) float64 {
 	var i, j, prev, prop4 float64
 	j = 1
-	for prob := 0; prob < 1000; prob++ {
+	for range 1000 {
 		prop3 := pbeta(beta3, alpha1, beta1)
 		prop3 = (prop3 - prob1) * math.Exp(logBeta+prob2*math.Log(beta3)+beta2*math.Log(1.0-beta3))
 		if prop3*prop4 <= 0 {
 			prev = math.Max(math.Abs(j), maxCumulative)
 		}
 		h := 1.0
-		for iteratorCount := 0; iteratorCount < 1000; iteratorCount++ {
+		for range 1000 {
 			j = h * prop3
 			if math.Abs(j) < prev {
 				i = beta3 - j
@@ -7544,7 +7545,7 @@ func (fn *formulaFuncs) CHITEST(argsList *list.List) formulaArg {
 	}
 	var result float64
 	var degrees int
-	for i := 0; i < len(actualList); i++ {
+	for i := range actualList {
 		a, e := actualList[i].ToNumber(), expectedList[i].ToNumber()
 		if a.Type == ArgNumber && e.Type == ArgNumber {
 			if e.Number == 0 {
@@ -8013,7 +8014,7 @@ func (fn *formulaFuncs) covar(name string, argsList *list.List) formulaArg {
 	l2.PushBack(array2)
 	result, skip := 0.0, 0
 	mean1, mean2 := fn.AVERAGE(l1), fn.AVERAGE(l2)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		arg1 := left[i].ToNumber()
 		arg2 := right[i].ToNumber()
 		if arg1.Type == ArgError || arg2.Type == ArgError {
@@ -8111,7 +8112,7 @@ func (fn *formulaFuncs) CORREL(argsList *list.List) formulaArg {
 		return newErrorFormulaArg(formulaErrorNA, formulaErrorNA)
 	}
 	l1, l2, l3 := list.New(), list.New(), list.New()
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if lhs, rhs := left[i].ToNumber(), right[i].ToNumber(); lhs.Number != 0 && rhs.Number != 0 {
 			l1.PushBack(lhs)
 			l2.PushBack(rhs)
@@ -8122,7 +8123,7 @@ func (fn *formulaFuncs) CORREL(argsList *list.List) formulaArg {
 		return newErrorFormulaArg(formulaErrorDIV, formulaErrorDIV)
 	}
 	mean1, mean2, skip := fn.AVERAGE(l1), fn.AVERAGE(l2), 0
-	for i := 0; i < n; i++ {
+	for i := range n {
 		lhs, rhs := left[i].ToNumber(), right[i].ToNumber()
 		if lhs.Number == 0 || rhs.Number == 0 {
 			skip++
@@ -8397,7 +8398,7 @@ func matrixToSortedColumnList(arg formulaArg) ([]sortedItem, *formulaArg) {
 		cols = len(arg.Matrix[0])
 	)
 	for _, row := range arg.Matrix {
-		for colIdx := 0; colIdx < cols; colIdx++ {
+		for colIdx := range cols {
 			cell := row[colIdx]
 			if cell.Type == ArgError {
 				return nil, &cell
@@ -8662,8 +8663,8 @@ func (fn *formulaFuncs) GEOMEAN(argsList *list.List) formulaArg {
 
 // getNewMatrix create matrix by given columns and rows.
 func getNewMatrix(c, r int) (matrix [][]float64) {
-	for i := 0; i < c; i++ {
-		for j := 0; j < r; j++ {
+	for i := range c {
+		for j := range r {
 			for x := len(matrix); x <= i; x++ {
 				matrix = append(matrix, []float64{})
 			}
@@ -8687,7 +8688,7 @@ func approxSub(a, b float64) float64 {
 
 // matrixClone return a copy of all elements of the original matrix.
 func matrixClone(matrix [][]float64) (cloneMatrix [][]float64) {
-	for i := 0; i < len(matrix); i++ {
+	for i := range matrix {
 		for j := 0; j < len(matrix[i]); j++ {
 			for x := len(cloneMatrix); x <= i; x++ {
 				cloneMatrix = append(cloneMatrix, []float64{})
@@ -8710,7 +8711,7 @@ type trendGrowthMatrixInfo struct {
 // prepareTrendGrowthMtxX is a part of implementation of the trend growth prepare.
 func prepareTrendGrowthMtxX(mtxX [][]float64) [][]float64 {
 	var mtx [][]float64
-	for i := 0; i < len(mtxX); i++ {
+	for i := range mtxX {
 		for j := 0; j < len(mtxX[i]); j++ {
 			if mtxX[i][j] == 0 {
 				return nil
@@ -8730,7 +8731,7 @@ func prepareTrendGrowthMtxX(mtxX [][]float64) [][]float64 {
 // prepareTrendGrowthMtxY is a part of implementation of the trend growth prepare.
 func prepareTrendGrowthMtxY(bLOG bool, mtxY [][]float64) [][]float64 {
 	var mtx [][]float64
-	for i := 0; i < len(mtxY); i++ {
+	for i := range mtxY {
 		for j := 0; j < len(mtxY[i]); j++ {
 			if mtxY[i][j] == 0 {
 				return nil
@@ -8746,7 +8747,7 @@ func prepareTrendGrowthMtxY(bLOG bool, mtxY [][]float64) [][]float64 {
 	}
 	if bLOG {
 		var pNewY [][]float64
-		for i := 0; i < len(mtxY); i++ {
+		for i := range mtxY {
 			for j := 0; j < len(mtxY[i]); j++ {
 				fVal := mtxY[i][j]
 				if fVal <= 0 {
@@ -8799,8 +8800,8 @@ func prepareTrendGrowth(bLOG bool, mtxX, mtxY [][]float64) (*trendGrowthMatrixIn
 		newX = getNewMatrix(nCY, nRY)
 		nCX, nRX = nCY, nRY
 		num := 1.0
-		for i := 0; i < nRY; i++ {
-			for j := 0; j < nCY; j++ {
+		for i := range nRY {
+			for j := range nCY {
 				newX[j][i] = num
 				num++
 			}
@@ -8846,7 +8847,7 @@ func putDouble(mtx [][]float64, idx int, val float64) {
 // calcMeanOverAll returns mean of the given matrix by over all element.
 func calcMeanOverAll(mtx [][]float64, n int) float64 {
 	var sum float64
-	for i := 0; i < len(mtx); i++ {
+	for i := range mtx {
 		for j := 0; j < len(mtx[i]); j++ {
 			sum += mtx[i][j]
 		}
@@ -8858,7 +8859,7 @@ func calcMeanOverAll(mtx [][]float64, n int) float64 {
 // element.
 func calcSumProduct(mtxA, mtxB [][]float64, m int) float64 {
 	sum := 0.0
-	for i := 0; i < m; i++ {
+	for i := range m {
 		sum += getDouble(mtxA, i) * getDouble(mtxB, i)
 	}
 	return sum
@@ -8866,9 +8867,9 @@ func calcSumProduct(mtxA, mtxB [][]float64, m int) float64 {
 
 // calcColumnMeans calculates means of the columns of matrix.
 func calcColumnMeans(mtxX, mtxRes [][]float64, c, r int) {
-	for i := 0; i < c; i++ {
+	for i := range c {
 		var sum float64
-		for k := 0; k < r; k++ {
+		for k := range r {
 			sum += mtxX[i][k]
 		}
 		putDouble(mtxRes, i, sum/float64(r))
@@ -8877,8 +8878,8 @@ func calcColumnMeans(mtxX, mtxRes [][]float64, c, r int) {
 
 // calcColumnsDelta calculates subtract of the columns of matrix.
 func calcColumnsDelta(mtx, columnMeans [][]float64, c, r int) {
-	for i := 0; i < c; i++ {
-		for k := 0; k < r; k++ {
+	for i := range c {
+		for k := range r {
 			mtx[i][k] = approxSub(mtx[i][k], getDouble(columnMeans, i))
 		}
 	}
@@ -8909,10 +8910,10 @@ func calcColsMaximumNorm(mtxA [][]float64, c, r, n int) float64 {
 // calcFastMult returns multiply n x m matrix A with m x l matrix B to n x l matrix R.
 func calcFastMult(mtxA, mtxB, mtxR [][]float64, n, m, l int) {
 	var sum float64
-	for row := 0; row < n; row++ {
-		for col := 0; col < l; col++ {
+	for row := range n {
+		for col := range l {
 			sum = 0.0
-			for k := 0; k < m; k++ {
+			for k := range m {
 				sum += mtxA[k][row] * mtxB[col][k]
 			}
 			mtxR[col][row] = sum
@@ -8962,7 +8963,7 @@ func calcSolveWithUpperRightTriangle(mtxA [][]float64, vecR []float64, mtxS [][]
 // calcRowQRDecomposition calculates a QR decomposition with Householder
 // reflection.
 func calcRowQRDecomposition(mtxA [][]float64, vecR []float64, k, n int) bool {
-	for col := 0; col < k; col++ {
+	for col := range k {
 		scale := calcColsMaximumNorm(mtxA, col, col, n)
 		if scale == 0 {
 			return false
@@ -8998,9 +8999,9 @@ func calcApplyColsHouseholderTransformation(mtxA [][]float64, r int, mtxY [][]fl
 
 // calcRowMeans calculates means of the rows of matrix.
 func calcRowMeans(mtxX, mtxRes [][]float64, c, r int) {
-	for k := 0; k < r; k++ {
+	for k := range r {
 		var fSum float64
-		for i := 0; i < c; i++ {
+		for i := range c {
 			fSum += mtxX[i][k]
 		}
 		mtxRes[k][0] = fSum / float64(c)
@@ -9009,8 +9010,8 @@ func calcRowMeans(mtxX, mtxRes [][]float64, c, r int) {
 
 // calcRowsDelta calculates subtract of the rows of matrix.
 func calcRowsDelta(mtx, rowMeans [][]float64, c, r int) {
-	for k := 0; k < r; k++ {
-		for i := 0; i < c; i++ {
+	for k := range r {
+		for i := range c {
 			mtx[i][k] = approxSub(mtx[i][k], rowMeans[k][0])
 		}
 	}
@@ -9051,7 +9052,7 @@ func calcColsSumProduct(mtxA [][]float64, a int, mtxB [][]float64, b, c, n int) 
 // columns, k count of rows.
 func calcColQRDecomposition(mtxA [][]float64, vecR []float64, k, n int) bool {
 	var sum float64
-	for row := 0; row < k; row++ {
+	for row := range k {
 		// calculate vector u of the householder transformation
 		scale := calcColumnMaximumNorm(mtxA, row, row, n)
 		if scale == 0 {
@@ -9095,7 +9096,7 @@ func calcTrendGrowthSimpleRegression(bConstant, bGrowth bool, mtxY, mtxX, newX, 
 	var meanX float64
 	if bConstant {
 		meanX = calcMeanOverAll(mtxX, N)
-		for i := 0; i < len(mtxX); i++ {
+		for i := range mtxX {
 			for j := 0; j < len(mtxX[i]); j++ {
 				mtxX[i][j] = approxSub(mtxX[i][j], meanX)
 			}
@@ -9108,7 +9109,7 @@ func calcTrendGrowthSimpleRegression(bConstant, bGrowth bool, mtxY, mtxX, newX, 
 	var intercept float64
 	if bConstant {
 		intercept = meanY - slope*meanX
-		for i := 0; i < len(mtxRes); i++ {
+		for i := range mtxRes {
 			for j := 0; j < len(mtxRes[i]); j++ {
 				help = newX[i][j]*slope + intercept
 				if bGrowth {
@@ -9119,7 +9120,7 @@ func calcTrendGrowthSimpleRegression(bConstant, bGrowth bool, mtxY, mtxX, newX, 
 			}
 		}
 	} else {
-		for i := 0; i < len(mtxRes); i++ {
+		for i := range mtxRes {
 			for j := 0; j < len(mtxRes[i]); j++ {
 				help = newX[i][j] * slope
 				if bGrowth {
@@ -9156,10 +9157,10 @@ func calcTrendGrowthMultipleRegressionPart1(bConstant, bGrowth bool, mtxY, mtxX,
 	if bIsSingular {
 		return
 	}
-	for col := 0; col < K; col++ {
+	for col := range K {
 		calcApplyRowsHouseholderTransformation(mtxX, col, mtxY, N)
 	}
-	for col := 0; col < K; col++ {
+	for col := range K {
 		putDouble(slopes, col, getDouble(mtxY, col))
 	}
 	calcSolveWithUpperRightTriangle(mtxX, vecR, slopes, K, false)
@@ -9167,12 +9168,12 @@ func calcTrendGrowthMultipleRegressionPart1(bConstant, bGrowth bool, mtxY, mtxX,
 	calcFastMult(newX, slopes, mtxRes, RXN, K, 1)
 	if bConstant {
 		intercept := meanY - calcSumProduct(means, slopes, K)
-		for row := 0; row < RXN; row++ {
+		for row := range RXN {
 			mtxRes[0][row] = mtxRes[0][row] + intercept
 		}
 	}
 	if bGrowth {
-		for i := 0; i < RXN; i++ {
+		for i := range RXN {
 			putDouble(mtxRes, i, math.Exp(getDouble(mtxRes, i)))
 		}
 	}
@@ -9202,10 +9203,10 @@ func calcTrendGrowthMultipleRegressionPart2(bConstant, bGrowth bool, mtxY, mtxX,
 	if bIsSingular {
 		return
 	}
-	for row := 0; row < K; row++ {
+	for row := range K {
 		calcApplyColsHouseholderTransformation(mtxX, row, mtxY, N)
 	}
-	for col := 0; col < K; col++ {
+	for col := range K {
 		putDouble(slopes, col, getDouble(mtxY, col))
 	}
 	calcSolveWithUpperRightTriangle(mtxX, vecR, slopes, K, true)
@@ -9213,12 +9214,12 @@ func calcTrendGrowthMultipleRegressionPart2(bConstant, bGrowth bool, mtxY, mtxX,
 	calcFastMult(slopes, newX, mtxRes, 1, K, nCXN)
 	if bConstant {
 		fIntercept := meanY - calcSumProduct(means, slopes, K)
-		for col := 0; col < nCXN; col++ {
+		for col := range nCXN {
 			mtxRes[col][0] = mtxRes[col][0] + fIntercept
 		}
 	}
 	if bGrowth {
-		for i := 0; i < nCXN; i++ {
+		for i := range nCXN {
 			putDouble(mtxRes, i, math.Exp(getDouble(mtxRes, i)))
 		}
 	}
@@ -9927,9 +9928,9 @@ func (fn *formulaFuncs) MODE(argsList *list.List) formulaArg {
 	cnt := len(values)
 	var count, modeCnt int
 	var mode float64
-	for i := 0; i < cnt; i++ {
+	for i := range cnt {
 		count = 0
-		for j := 0; j < cnt; j++ {
+		for j := range cnt {
 			if j != i && values[j] == values[i] {
 				count++
 			}
@@ -9970,7 +9971,7 @@ func (fn *formulaFuncs) MODEdotMULT(argsList *list.List) formulaArg {
 	cnt := len(values)
 	var count, modeCnt int
 	var mtx [][]formulaArg
-	for i := 0; i < cnt; i++ {
+	for i := range cnt {
 		count = 0
 		for j := i + 1; j < cnt; j++ {
 			if values[i] == values[j] {
@@ -11107,7 +11108,7 @@ func (fn *formulaFuncs) STEYX(argsList *list.List) formulaArg {
 		return newErrorFormulaArg(formulaErrorNA, formulaErrorNA)
 	}
 	var count, sumX, sumY, squareX, squareY, sigmaXY float64
-	for i := 0; i < len(array1); i++ {
+	for i := range array1 {
 		num1, num2 := array1[i], array2[i]
 		if num1.Type != ArgNumber || num2.Type != ArgNumber {
 			continue
@@ -11352,8 +11353,8 @@ func (fn *formulaFuncs) TREND(argsList *list.List) formulaArg {
 func tTest(bTemplin bool, mtx1, mtx2 [][]formulaArg, c1, c2, r1, r2 int) (float64, float64, bool) {
 	var cnt1, cnt2, sum1, sumSqr1, sum2, sumSqr2 float64
 	var fVal formulaArg
-	for i := 0; i < c1; i++ {
-		for j := 0; j < r1; j++ {
+	for i := range c1 {
+		for j := range r1 {
 			if fVal = mtx1[i][j]; fVal.Type == ArgNumber {
 				sum1 += fVal.Number
 				sumSqr1 += fVal.Number * fVal.Number
@@ -11361,8 +11362,8 @@ func tTest(bTemplin bool, mtx1, mtx2 [][]formulaArg, c1, c2, r1, r2 int) (float6
 			}
 		}
 	}
-	for i := 0; i < c2; i++ {
-		for j := 0; j < r2; j++ {
+	for i := range c2 {
+		for j := range r2 {
 			if fVal = mtx2[i][j]; fVal.Type == ArgNumber {
 				sum2 += fVal.Number
 				sumSqr2 += fVal.Number * fVal.Number
@@ -11397,8 +11398,8 @@ func (fn *formulaFuncs) tTest(mtx1, mtx2 [][]formulaArg, fTails, fTyp float64) f
 		}
 		var cnt, sum1, sum2, sumSqrD float64
 		var fVal1, fVal2 formulaArg
-		for i := 0; i < c1; i++ {
-			for j := 0; j < r1; j++ {
+		for i := range c1 {
+			for j := range r1 {
 				fVal1, fVal2 = mtx1[i][j], mtx2[i][j]
 				if fVal1.Type != ArgNumber || fVal2.Type != ArgNumber {
 					continue
@@ -12296,7 +12297,7 @@ func (fn *formulaFuncs) SWITCH(argsList *list.List) formulaArg {
 	}
 	if switchCount > 0 {
 		arg := argsList.Front()
-		for i := 0; i < switchCount; i++ {
+		for range switchCount {
 			arg = arg.Next()
 			if target.Value() == arg.Value.(formulaArg).Value() {
 				result = arg.Next().Value.(formulaArg)
@@ -13136,7 +13137,7 @@ func prepareHolidays(args formulaArg) []int {
 
 // workdayIntl is an implementation of the formula function WORKDAY.INTL.
 func workdayIntl(endDate, sign int, holidays []int, weekendMask []byte, startDate float64) int {
-	for i := 0; i < len(holidays); i++ {
+	for i := range holidays {
 		holiday := holidays[i]
 		if sign > 0 {
 			if holiday > endDate {
@@ -14344,7 +14345,7 @@ func (fn *formulaFuncs) mid(name string, argsList *list.List) formulaArg {
 		return newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
 	}
 	if name == "MIDB" {
-		var result string
+		var result strings.Builder
 		var cnt, offset int
 		for _, char := range text {
 			offset++
@@ -14359,18 +14360,18 @@ func (fn *formulaFuncs) mid(name string, argsList *list.List) formulaArg {
 			if offset+1 > startNum {
 				if dbcs {
 					if cnt+2 > int(numCharsArg.Number) {
-						result += string(char)[:1]
+						result.WriteString(string(char)[:1])
 						break
 					}
-					result += string(char)
+					result.WriteString(string(char))
 					cnt += 2
 				} else {
-					result += string(char)
+					result.WriteString(string(char))
 					cnt++
 				}
 			}
 		}
-		return newStringFormulaArg(result)
+		return newStringFormulaArg(result.String())
 	}
 	// MID
 	textLen := countUTF16String(text)
@@ -14643,7 +14644,7 @@ func (fn *formulaFuncs) prepareTextAfterBefore(name string, argsList *list.List)
 func textAfterBeforeSearch(text string, delimiter []string, startPos int, reverseSearch bool) (int, string) {
 	idx := -1
 	var modifiedDelimiter string
-	for i := 0; i < len(delimiter); i++ {
+	for i := range delimiter {
 		nextDelimiter := delimiter[i]
 		nextIdx := strings.Index(text[startPos:], nextDelimiter)
 		if nextIdx != -1 {
@@ -14882,7 +14883,7 @@ func transposeFormulaArgsMatrix(args [][]formulaArg) [][]formulaArg {
 	for i := 0; i < len(args[0]); i++ {
 		transposedArgs[i] = make([]formulaArg, len(args))
 	}
-	for i := 0; i < len(args); i++ {
+	for i := range args {
 		for j := 0; j < len(args[i]); j++ {
 			transposedArgs[j][i] = args[i][j]
 		}
@@ -14894,8 +14895,8 @@ func transposeFormulaArgsMatrix(args [][]formulaArg) [][]formulaArg {
 // number of columns and rows.
 func transposeFormulaArgsList(args []formulaArg, cols, rows int) ([]formulaArg, int, int) {
 	transposedArgs := make([]formulaArg, len(args))
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := range rows {
+		for j := range cols {
 			transposedArgs[j*rows+i] = args[i*cols+j]
 		}
 	}
@@ -15000,8 +15001,8 @@ func (fn *formulaFuncs) VALUE(argsList *list.List) formulaArg {
 	}
 	text := strings.ReplaceAll(arg.Value(), ",", "")
 	percent := 1.0
-	if strings.HasSuffix(text, "%") {
-		percent, text = 0.01, strings.TrimSuffix(text, "%")
+	if before, ok := strings.CutSuffix(text, "%"); ok {
+		percent, text = 0.01, before
 	}
 	decimal := big.Float{}
 	if _, ok := decimal.SetString(text); ok {
@@ -15216,7 +15217,7 @@ func (fn *formulaFuncs) CHOOSE(argsList *list.List) formulaArg {
 		return newErrorFormulaArg(formulaErrorVALUE, "index_num should be <= to the number of values")
 	}
 	arg := argsList.Front()
-	for i := 0; i < idx; i++ {
+	for range idx {
 		arg = arg.Next()
 	}
 	return arg.Value.(formulaArg)
@@ -17424,7 +17425,7 @@ func (fn *formulaFuncs) IRR(argsList *list.List) formulaArg {
 	f1 := fn.NPV(args)
 	args.Front().Value = x2
 	f2 := fn.NPV(args)
-	for i := 0; i < maxFinancialIterations; i++ {
+	for range maxFinancialIterations {
 		if f1.Number*f2.Number < 0 {
 			break
 		}
@@ -17451,7 +17452,7 @@ func (fn *formulaFuncs) IRR(argsList *list.List) formulaArg {
 		rtb = x2.Number
 		dx = x1.Number - x2.Number
 	}
-	for i := 0; i < maxFinancialIterations; i++ {
+	for range maxFinancialIterations {
 		dx *= 0.5
 		xMid = rtb + dx
 		args.Front().Value = newNumberFormulaArg(xMid)
@@ -18884,7 +18885,7 @@ func (fn *formulaFuncs) prepareXArgs(values, dates formulaArg) (valuesArg, dates
 // xirr is an implementation of the formula function XIRR.
 func (fn *formulaFuncs) xirr(values, dates []float64, guess float64) formulaArg {
 	positive, negative := false, false
-	for i := 0; i < len(values); i++ {
+	for i := range values {
 		if values[i] > 0 {
 			positive = true
 		}
@@ -19193,7 +19194,7 @@ func (db *calcDatabase) criteriaEval() bool {
 	)
 	if len(db.indexMap) == 0 {
 		fields := criteria[0]
-		for j := 0; j < columns; j++ {
+		for j := range columns {
 			if k = db.columnIndex(db.database, fields[j]); k < 0 {
 				return false
 			}

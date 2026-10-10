@@ -232,14 +232,14 @@ func TestSetPageLayout(t *testing.T) {
 	assert.True(t, ok)
 	ws.(*xlsxWorksheet).PageSetUp = nil
 	expected := PageLayoutOptions{
-		Size:            intPtr(1),
-		Orientation:     stringPtr("landscape"),
-		FirstPageNumber: uintPtr(1),
-		AdjustTo:        uintPtr(120),
-		FitToHeight:     intPtr(2),
-		FitToWidth:      intPtr(2),
-		BlackAndWhite:   boolPtr(true),
-		PageOrder:       stringPtr("overThenDown"),
+		Size:            new(1),
+		Orientation:     new("landscape"),
+		FirstPageNumber: new(uint(1)),
+		AdjustTo:        new(uint(120)),
+		FitToHeight:     new(2),
+		FitToWidth:      new(2),
+		BlackAndWhite:   new(true),
+		PageOrder:       new("overThenDown"),
 	}
 	assert.NoError(t, f.SetPageLayout("Sheet1", &expected))
 	opts, err := f.GetPageLayout("Sheet1")
@@ -251,13 +251,13 @@ func TestSetPageLayout(t *testing.T) {
 	assert.Equal(t, ErrSheetNameInvalid, f.SetPageLayout("Sheet:1", nil))
 	// Test set page layout with invalid parameters
 	assert.Equal(t, ErrPageSetupAdjustTo, f.SetPageLayout("Sheet1", &PageLayoutOptions{
-		AdjustTo: uintPtr(5),
+		AdjustTo: new(uint(5)),
 	}))
 	assert.EqualError(t, f.SetPageLayout("Sheet1", &PageLayoutOptions{
-		Orientation: stringPtr("x"),
+		Orientation: new("x"),
 	}), "invalid Orientation value \"x\", acceptable value should be one of portrait, landscape")
 	assert.EqualError(t, f.SetPageLayout("Sheet1", &PageLayoutOptions{
-		PageOrder: stringPtr("x"),
+		PageOrder: new("x"),
 	}), "invalid PageOrder value \"x\", acceptable value should be one of overThenDown, downThenOver")
 }
 
@@ -724,7 +724,7 @@ func BenchmarkNewSheet(b *testing.B) {
 
 func newSheetWithSet() {
 	f := NewFile()
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		_ = f.SetCellInt("Sheet1", "A"+strconv.Itoa(i+1), int64(i))
 	}
 	f = nil
@@ -740,7 +740,7 @@ func BenchmarkFile_SaveAs(b *testing.B) {
 
 func newSheetWithSave() {
 	f := NewFile()
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		_ = f.SetCellInt("Sheet1", "A"+strconv.Itoa(i+1), int64(i))
 	}
 	_ = f.Save()

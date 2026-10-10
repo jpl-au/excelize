@@ -163,7 +163,7 @@ func (f *File) GetMergeCells(sheet string, withoutValues ...bool) ([]MergeCell, 
 		for i := range ws.MergeCells.Cells {
 			ref, val := ws.MergeCells.Cells[i].Ref, ""
 			if !withoutVal {
-				cell := strings.Split(ref, ":")[0]
+				cell, _, _ := strings.Cut(ref, ":")
 				val, _ = f.GetCellValue(sheet, cell)
 			}
 			mergeCells = append(mergeCells, []string{ref, val})

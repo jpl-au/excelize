@@ -126,7 +126,7 @@ func (f *File) GetCellType(sheet, cell string) (CellType, error) {
 // times can not representation in Go language time.Time data type. Please set
 // the cell value as number 0 or 60, then create and bind the date-time number
 // format style for the cell.
-func (f *File) SetCellValue(sheet, cell string, value interface{}) error {
+func (f *File) SetCellValue(sheet, cell string, value any) error {
 	var err error
 	switch v := value.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
@@ -206,7 +206,7 @@ func (f *File) removeFormula(c *xlsxC, ws *xlsxWorksheet, sheet string) error {
 }
 
 // setCellIntFunc is a wrapper of SetCellInt.
-func (f *File) setCellIntFunc(sheet, cell string, value interface{}) error {
+func (f *File) setCellIntFunc(sheet, cell string, value any) error {
 	var err error
 	switch v := value.(type) {
 	case int:
@@ -1484,7 +1484,7 @@ func (f *File) SetCellRichText(sheet, cell string, runs []RichTextRun) error {
 // B6 on Sheet1:
 //
 //	err := f.SetSheetRow("Sheet1", "B6", &[]interface{}{"1", nil, 2})
-func (f *File) SetSheetRow(sheet, cell string, slice interface{}) error {
+func (f *File) SetSheetRow(sheet, cell string, slice any) error {
 	return f.setSheetCells(sheet, cell, slice, rows)
 }
 
@@ -1493,19 +1493,19 @@ func (f *File) SetSheetRow(sheet, cell string, slice interface{}) error {
 // array to column B start with the cell B6 on Sheet1:
 //
 //	err := f.SetSheetCol("Sheet1", "B6", &[]interface{}{"1", nil, 2})
-func (f *File) SetSheetCol(sheet, cell string, slice interface{}) error {
+func (f *File) SetSheetCol(sheet, cell string, slice any) error {
 	return f.setSheetCells(sheet, cell, slice, columns)
 }
 
 // setSheetCells provides a function to set worksheet cells value.
-func (f *File) setSheetCells(sheet, cell string, slice interface{}, dir adjustDirection) error {
+func (f *File) setSheetCells(sheet, cell string, slice any, dir adjustDirection) error {
 	col, row, err := CellNameToCoordinates(cell)
 	if err != nil {
 		return err
 	}
 	// Make sure 'slice' is a Ptr to Slice
 	v := reflect.ValueOf(slice)
-	if v.Kind() != reflect.Ptr || v.Elem().Kind() != reflect.Slice {
+	if v.Kind() != reflect.Pointer || v.Elem().Kind() != reflect.Slice {
 		return ErrParameterInvalid
 	}
 	v = v.Elem()
@@ -1809,7 +1809,7 @@ func getSharedFormula(ws *xlsxWorksheet, si int, cell string) (string, error) {
 // consideration absolute references with dollar sign ($)
 func shiftCell(val string, dCol, dRow int) string {
 	parts := strings.Split(val, ":")
-	for j := 0; j < len(parts); j++ {
+	for j := range parts {
 		cell := parts[j]
 		trimmedCellName := strings.ReplaceAll(cell, "$", "")
 		c, r, err := CellNameToCoordinates(trimmedCellName)

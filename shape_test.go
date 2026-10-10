@@ -54,8 +54,8 @@ func TestAddShape(t *testing.T) {
 		Format: GraphicOptions{
 			AltText:     "Shape",
 			Name:        "Shape 1",
-			PrintObject: boolPtr(true),
-			Locked:      boolPtr(false),
+			PrintObject: new(true),
+			Locked:      new(false),
 			ScaleX:      0.8,
 			ScaleY:      0.8,
 			Positioning: "oneCell",
@@ -108,8 +108,8 @@ func TestAddDrawingShape(t *testing.T) {
 			Width:  defaultShapeSize,
 			Height: defaultShapeSize,
 			Format: GraphicOptions{
-				PrintObject: boolPtr(true),
-				Locked:      boolPtr(false),
+				PrintObject: new(true),
+				Locked:      new(false),
 			},
 		},
 	), "XML syntax error on line 1: invalid UTF-8")

@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -190,7 +191,7 @@ func (f *File) adjustRowDimensions(sheet string, ws *xlsxWorksheet, row, offset 
 			return err
 		}
 		numOfRows := len(worksheet.SheetData.Row)
-		for i := 0; i < numOfRows; i++ {
+		for i := range numOfRows {
 			r := &worksheet.SheetData.Row[i]
 			if err = f.adjustSingleRowFormulas(sheet, sheetN, r, row, offset, false); err != nil {
 				return err
@@ -206,7 +207,7 @@ func (f *File) adjustRowDimensions(sheet string, ws *xlsxWorksheet, row, offset 
 		return ErrMaxRows
 	}
 	numOfRows := len(ws.SheetData.Row)
-	for i := 0; i < numOfRows; i++ {
+	for i := range numOfRows {
 		r := &ws.SheetData.Row[i]
 		if newRow := r.R + offset; r.R >= row && newRow > 0 {
 			r.adjustSingleRowDimensions(offset)
@@ -251,7 +252,7 @@ func (f *File) adjustCellRef(cellRef string, dir adjustDirection, num, offset in
 		}
 		return coordinates
 	}
-	for _, ref := range strings.Split(cellRef, " ") {
+	for ref := range strings.SplitSeq(cellRef, " ") {
 		if !strings.Contains(ref, ":") {
 			ref += ":" + ref
 		}
@@ -295,7 +296,7 @@ func (f *File) adjustFormula(sheet, sheetN string, cell *xlsxC, dir adjustDirect
 			return err
 		}
 		if si && cell.F.Si != nil {
-			cell.F.Si = intPtr(*cell.F.Si + 1)
+			cell.F.Si = new(*cell.F.Si + 1)
 		}
 	}
 	if cell.F.Content != "" {
@@ -554,12 +555,12 @@ func (af *arrayFormulaOperandToken) setCoordinates() error {
 // transformArrayFormula transforms an array formula to the normal formula by
 // giving a formula tokens list and formula operand tokens list.
 func transformArrayFormula(tokens []efp.Token, afs []arrayFormulaOperandToken) string {
-	var val string
+	var val strings.Builder
 	for i, token := range tokens {
 		var skip bool
 		for _, af := range afs {
 			if af.operandTokenIndex == i {
-				val += af.sheetName + af.targetCellRef
+				val.WriteString(af.sheetName + af.targetCellRef)
 				skip = true
 				break
 			}
@@ -568,16 +569,16 @@ func transformArrayFormula(tokens []efp.Token, afs []arrayFormulaOperandToken) s
 			continue
 		}
 		if paren := transformParenthesesToken(token); paren != "" {
-			val += transformParenthesesToken(token)
+			val.WriteString(transformParenthesesToken(token))
 			continue
 		}
 		if token.TType == efp.TokenTypeOperand && token.TSubType == efp.TokenSubTypeText {
-			val += string(efp.QuoteDouble) + strings.ReplaceAll(token.TValue, "\"", "\"\"") + string(efp.QuoteDouble)
+			val.WriteString(string(efp.QuoteDouble) + strings.ReplaceAll(token.TValue, "\"", "\"\"") + string(efp.QuoteDouble))
 			continue
 		}
-		val += token.TValue
+		val.WriteString(token.TValue)
 	}
-	return val
+	return val.String()
 }
 
 // getArrayFormulaTokens returns parsed formula token and operand related token
@@ -621,8 +622,8 @@ func (f *File) adjustHyperlinks(ws *xlsxWorksheet, sheet string, dir adjustDirec
 
 	// order is important
 	if offset < 0 {
-		for i := len(ws.Hyperlinks.Hyperlink) - 1; i >= 0; i-- {
-			linkData := ws.Hyperlinks.Hyperlink[i]
+		for i, linkData := range slices.Backward(ws.Hyperlinks.Hyperlink) {
+
 			colNum, rowNum, _ := CellNameToCoordinates(linkData.Ref)
 
 			if (dir == rows && num == rowNum) || (dir == columns && num == colNum) {

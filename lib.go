@@ -387,7 +387,7 @@ func (f *File) getDefinedNameRefTo(definedNameName, currentSheet string) (refTo 
 func flatSqref(sqref string) (cells map[int][][]int, err error) {
 	var coordinates []int
 	cells = make(map[int][][]int)
-	for _, ref := range strings.Fields(sqref) {
+	for ref := range strings.FieldsSeq(sqref) {
 		rng := strings.Split(ref, ":")
 		switch len(rng) {
 		case 1:
@@ -456,19 +456,29 @@ func inFloat64Slice(a []float64, x float64) int {
 }
 
 // boolPtr returns a pointer to a bool with the given value.
-func boolPtr(b bool) *bool { return &b }
+//
+//go:fix inline
+func boolPtr(b bool) *bool { return new(b) }
 
 // intPtr returns a pointer to an int with the given value.
-func intPtr(i int) *int { return &i }
+//
+//go:fix inline
+func intPtr(i int) *int { return new(i) }
 
 // uintPtr returns a pointer to an unsigned integer with the given value.
-func uintPtr(u uint) *uint { return &u }
+//
+//go:fix inline
+func uintPtr(u uint) *uint { return new(u) }
 
 // float64Ptr returns a pointer to a float64 with the given value.
-func float64Ptr(f float64) *float64 { return &f }
+//
+//go:fix inline
+func float64Ptr(f float64) *float64 { return new(f) }
 
 // stringPtr returns a pointer to a string with the given value.
-func stringPtr(s string) *string { return &s }
+//
+//go:fix inline
+func stringPtr(s string) *string { return new(s) }
 
 // Value extracts float64 data type numeric from a attribute value.
 func (attr *attrValFloat) Value() float64 {
@@ -699,18 +709,18 @@ func getRootElement(d *xml.Decoder) []xml.Attr {
 // genXMLNamespace generate serialized XML attributes with a multi namespace
 // by given element attributes.
 func genXMLNamespace(attr []xml.Attr) string {
-	var rootElement string
+	var rootElement strings.Builder
 	for _, v := range attr {
 		if lastSpace := getXMLNamespace(v.Name.Space, attr); lastSpace != "" {
 			if lastSpace == NameSpaceXML {
 				lastSpace = "xml"
 			}
-			rootElement += fmt.Sprintf("%s:%s=\"%s\" ", lastSpace, v.Name.Local, v.Value)
+			rootElement.WriteString(fmt.Sprintf("%s:%s=\"%s\" ", lastSpace, v.Name.Local, v.Value))
 			continue
 		}
-		rootElement += fmt.Sprintf("%s=\"%s\" ", v.Name.Local, v.Value)
+		rootElement.WriteString(fmt.Sprintf("%s=\"%s\" ", v.Name.Local, v.Value))
 	}
-	return strings.TrimSpace(rootElement) + ">"
+	return strings.TrimSpace(rootElement.String()) + ">"
 }
 
 // getXMLNamespace extract XML namespace from specified element name and attributes.
@@ -961,7 +971,7 @@ func setPtrFields(immutable, mutable reflect.Value) {
 func setNoPtrFieldsVal(fields []string, immutable, mutable reflect.Value) {
 	for _, field := range fields {
 		immutableField := immutable.FieldByName(field)
-		if immutableField.Kind() == reflect.Ptr {
+		if immutableField.Kind() == reflect.Pointer {
 			if immutableField.IsValid() && !immutableField.IsNil() {
 				assignFieldValue(field, immutableField.Elem(), mutable)
 			}
@@ -976,7 +986,7 @@ func setNoPtrFieldsVal(fields []string, immutable, mutable reflect.Value) {
 func setPtrFieldsVal(fields []string, immutable, mutable reflect.Value) {
 	for _, field := range fields {
 		immutableField := immutable.FieldByName(field)
-		if immutableField.Kind() == reflect.Ptr {
+		if immutableField.Kind() == reflect.Pointer {
 			if immutableField.IsValid() && !immutableField.IsNil() {
 				mutable.FieldByName(field).Set(immutableField.Elem())
 			}
@@ -1024,12 +1034,12 @@ func NewStack() *Stack {
 }
 
 // Push a value onto the top of the stack.
-func (stack *Stack) Push(value interface{}) {
+func (stack *Stack) Push(value any) {
 	stack.list.PushBack(value)
 }
 
 // Pop the top item of the stack and return it.
-func (stack *Stack) Pop() interface{} {
+func (stack *Stack) Pop() any {
 	e := stack.list.Back()
 	if e != nil {
 		stack.list.Remove(e)
@@ -1039,7 +1049,7 @@ func (stack *Stack) Pop() interface{} {
 }
 
 // Peek view the top item on the stack.
-func (stack *Stack) Peek() interface{} {
+func (stack *Stack) Peek() any {
 	e := stack.list.Back()
 	if e != nil {
 		return e.Value

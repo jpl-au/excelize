@@ -13,9 +13,9 @@ func TestWorkbookProps(t *testing.T) {
 	assert.NoError(t, err)
 	wb.WorkbookPr = nil
 	expected := WorkbookPropsOptions{
-		Date1904:      boolPtr(true),
-		FilterPrivacy: boolPtr(true),
-		CodeName:      stringPtr("code"),
+		Date1904:      new(true),
+		FilterPrivacy: new(true),
+		CodeName:      new("code"),
 	}
 	assert.NoError(t, f.SetWorkbookProps(&expected))
 	opts, err := f.GetWorkbookProps()
@@ -43,11 +43,11 @@ func TestCalcProps(t *testing.T) {
 	assert.NoError(t, err)
 	wb.CalcPr = nil
 	expected := CalcPropsOptions{
-		FullCalcOnLoad:        boolPtr(true),
-		CalcID:                uintPtr(122211),
-		ConcurrentManualCount: uintPtr(5),
-		IterateCount:          uintPtr(10),
-		ConcurrentCalc:        boolPtr(true),
+		FullCalcOnLoad:        new(true),
+		CalcID:                new(uint(122211)),
+		ConcurrentManualCount: new(uint(5)),
+		IterateCount:          new(uint(10)),
+		ConcurrentCalc:        new(true),
 	}
 	assert.NoError(t, f.SetCalcProps(&expected))
 	opts, err := f.GetCalcProps()
@@ -58,8 +58,8 @@ func TestCalcProps(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, CalcPropsOptions{}, opts)
 	// Test set calculation properties with unsupported optional value
-	assert.Equal(t, newInvalidOptionalValue("CalcMode", "AUTO", supportedCalcMode), f.SetCalcProps(&CalcPropsOptions{CalcMode: stringPtr("AUTO")}))
-	assert.Equal(t, newInvalidOptionalValue("RefMode", "a1", supportedRefMode), f.SetCalcProps(&CalcPropsOptions{RefMode: stringPtr("a1")}))
+	assert.Equal(t, newInvalidOptionalValue("CalcMode", "AUTO", supportedCalcMode), f.SetCalcProps(&CalcPropsOptions{CalcMode: new("AUTO")}))
+	assert.Equal(t, newInvalidOptionalValue("RefMode", "a1", supportedRefMode), f.SetCalcProps(&CalcPropsOptions{RefMode: new("a1")}))
 	// Test set calculation properties with unsupported charset workbook
 	f.WorkBook = nil
 	f.Pkg.Store(defaultXMLPathWorkbook, MacintoshCyrillicCharset)
