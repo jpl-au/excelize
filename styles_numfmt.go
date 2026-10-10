@@ -4,8 +4,8 @@ package excelize
 // style by the given style index, the same index the GetCellStyle function
 // and the StyleID of a RowCell give. A custom number format gives its format
 // code, and a built-in number format gives its format code under English
-// localization. A number format that has no format code gives an empty
-// string.
+// localization, with the general number format given as "General". A number
+// format that has no format code gives an empty string.
 func (f *File) GetStyleNumFmtCode(idx int) (string, error) {
 	f.mu.Lock()
 	s, err := f.stylesReader()
@@ -17,8 +17,8 @@ func (f *File) GetStyleNumFmtCode(idx int) (string, error) {
 		return "", newInvalidStyleID(idx)
 	}
 	numFmtID := s.CellXfs.Xf[idx].NumFmtID
-	if numFmtID == nil {
-		return builtInNumFmt[0], nil
+	if numFmtID == nil || *numFmtID == 0 {
+		return "General", nil
 	}
 	if s.NumFmts != nil {
 		for _, numFmt := range s.NumFmts.NumFmt {

@@ -984,7 +984,7 @@ func TestGetStyleNumFmtCode(t *testing.T) {
 	// Test get the number format code of the default style
 	code, err := f.GetStyleNumFmtCode(0)
 	assert.NoError(t, err)
-	assert.Equal(t, "general", code)
+	assert.Equal(t, "General", code)
 	// Test get the number format code of a built-in and of a custom number format
 	builtIn, err := f.NewStyle(&Style{NumFmt: 2})
 	assert.NoError(t, err)
@@ -1005,7 +1005,7 @@ func TestGetStyleNumFmtCode(t *testing.T) {
 	f.Styles.CellXfs.Xf[builtIn].NumFmtID = nil
 	code, err = f.GetStyleNumFmtCode(builtIn)
 	assert.NoError(t, err)
-	assert.Equal(t, "general", code)
+	assert.Equal(t, "General", code)
 	// Test get the number format code with invalid style index
 	_, err = f.GetStyleNumFmtCode(-1)
 	assert.Equal(t, newInvalidStyleID(-1), err)
