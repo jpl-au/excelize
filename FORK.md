@@ -4,6 +4,15 @@ Excelize is the work of its authors and is used under the BSD 3-Clause licence i
 
 This fork makes no stability promise.
 
+## Setting up a clone
+
+Add the Excelize remote and stop it fetching tags. This fork has its own release tags, and an Excelize tag with the same name clashes with them.
+
+```
+git remote add upstream https://github.com/qax-os/excelize.git
+git config remote.upstream.tagOpt --no-tags
+```
+
 ## Updating this fork from Excelize
 
 `go fix` was run on this fork, so expect merge conflicts.
