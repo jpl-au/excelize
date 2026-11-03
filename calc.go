@@ -6204,7 +6204,11 @@ func (fn *formulaFuncs) SUMIFS(argsList *list.List) formulaArg {
 	for arg := argsList.Front().Next(); arg != nil; arg = arg.Next() {
 		args = append(args, arg.Value.(formulaArg))
 	}
-	for _, ref := range formulaIfsMatch(args) {
+	cellRefs, arg := formulaIfsMatch(args)
+	if arg.Type == ArgError {
+		return arg
+	}
+	for _, ref := range cellRefs {
 		if ref.Row >= len(sumRange) || ref.Col >= len(sumRange[ref.Row]) {
 			return newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
 		}
@@ -6565,8 +6569,15 @@ func (fn *formulaFuncs) AVERAGEIFS(argsList *list.List) formulaArg {
 	for arg := argsList.Front().Next(); arg != nil; arg = arg.Next() {
 		args = append(args, arg.Value.(formulaArg))
 	}
+	cellRefs, arg := formulaIfsMatch(args)
+	if arg.Type == ArgError {
+		return arg
+	}
 	count := 0.0
-	for _, ref := range formulaIfsMatch(args) {
+	for _, ref := range cellRefs {
+		if ref.Row >= len(sumRange) || ref.Col >= len(sumRange[ref.Row]) {
+			return newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
+		}
 		if num := sumRange[ref.Row][ref.Col].ToNumber(); num.Type == ArgNumber {
 			sum += num.Number
 			count++
@@ -8234,7 +8245,7 @@ func (fn *formulaFuncs) COUNTIF(argsList *list.List) formulaArg {
 }
 
 // formulaIfsMatch function returns cells reference array which match criteria.
-func formulaIfsMatch(args []formulaArg) (cellRefs []cellRef) {
+func formulaIfsMatch(args []formulaArg) (cellRefs []cellRef, arg formulaArg) {
 	for i := 0; i < len(args)-1; i += 2 {
 		var match []cellRef
 		matrix, criteria := args[i].Matrix, formulaCriteriaParser(args[i+1])
@@ -8249,6 +8260,10 @@ func formulaIfsMatch(args []formulaArg) (cellRefs []cellRef) {
 		} else {
 			match = []cellRef{}
 			for _, ref := range cellRefs {
+				if ref.Row >= len(matrix) || ref.Col >= len(matrix[ref.Row]) {
+					arg = newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
+					return nil, arg
+				}
 				value := matrix[ref.Row][ref.Col]
 				if ok, _ := formulaCriteriaEval(value, criteria); ok {
 					match = append(match, ref)
@@ -8275,7 +8290,11 @@ func (fn *formulaFuncs) COUNTIFS(argsList *list.List) formulaArg {
 	for arg := argsList.Front(); arg != nil; arg = arg.Next() {
 		args = append(args, arg.Value.(formulaArg))
 	}
-	return newNumberFormulaArg(float64(len(formulaIfsMatch(args))))
+	cellRefs, arg := formulaIfsMatch(args)
+	if arg.Type == ArgError {
+		return arg
+	}
+	return newNumberFormulaArg(float64(len(cellRefs)))
 }
 
 // CRITBINOM function returns the inverse of the Cumulative Binomial
@@ -10144,11 +10163,11 @@ func (fn *formulaFuncs) NORMINV(argsList *list.List) formulaArg {
 	if stdDev.Number < 0 {
 		return newErrorFormulaArg(formulaErrorNA, formulaErrorNA)
 	}
-	inv, err := norminv(prob.Number)
-	if err != nil {
-		return newErrorFormulaArg(err.Error(), err.Error())
+	inv := norminv(prob.Number)
+	if inv.Type == ArgError {
+		return inv
 	}
-	return newNumberFormulaArg(inv*stdDev.Number + mean.Number)
+	return newNumberFormulaArg(inv.Number*stdDev.Number + mean.Number)
 }
 
 // NORMdotSdotDIST function calculates the Standard Normal Cumulative
@@ -10218,7 +10237,7 @@ func (fn *formulaFuncs) NORMdotSdotINV(argsList *list.List) formulaArg {
 
 // norminv returns the inverse of the normal cumulative distribution for the
 // specified value.
-func norminv(p float64) (float64, error) {
+func norminv(p float64) formulaArg {
 	a := map[int]float64{
 		1: -3.969683028665376e+01, 2: 2.209460984245205e+02, 3: -2.759285104469687e+02,
 		4: 1.383577518672690e+02, 5: -3.066479806614716e+01, 6: 2.506628277459239e+00,
@@ -10237,11 +10256,12 @@ func norminv(p float64) (float64, error) {
 	}
 	pLow := 0.02425   // Use lower region approx. below this
 	pHigh := 1 - pLow // Use upper region approx. above this
+	arg := newErrorFormulaArg(formulaErrorNUM, formulaErrorNUM)
 	if 0 < p && p < pLow {
 		// Rational approximation for lower region.
 		q := math.Sqrt(-2 * math.Log(p))
-		return (((((c[1]*q+c[2])*q+c[3])*q+c[4])*q+c[5])*q + c[6]) /
-			((((d[1]*q+d[2])*q+d[3])*q+d[4])*q + 1), nil
+		return newNumberFormulaArg((((((c[1]*q+c[2])*q+c[3])*q+c[4])*q+c[5])*q + c[6]) /
+			((((d[1]*q+d[2])*q+d[3])*q+d[4])*q + 1))
 	} else if pLow <= p && p <= pHigh {
 		// Rational approximation for central region.
 		q := p - 0.5
@@ -10250,15 +10270,15 @@ func norminv(p float64) (float64, error) {
 		f2 := (b[1]*r + b[2]) * r
 		f3 := ((math.Nextafter(f2, f2)+b[3])*r + b[4]) * r
 		f4 := (math.Nextafter(f3, f3) + b[5]) * r
-		return (math.Nextafter(f1, f1) + a[6]) * q /
-			(math.Nextafter(f4, f4) + 1), nil
+		return newNumberFormulaArg((math.Nextafter(f1, f1) + a[6]) * q /
+			(math.Nextafter(f4, f4) + 1))
 	} else if pHigh < p && p < 1 {
 		// Rational approximation for upper region.
 		q := math.Sqrt(-2 * math.Log(1-p))
-		return -(((((c[1]*q+c[2])*q+c[3])*q+c[4])*q+c[5])*q + c[6]) /
-			((((d[1]*q+d[2])*q+d[3])*q+d[4])*q + 1), nil
+		return newNumberFormulaArg(-(((((c[1]*q+c[2])*q+c[3])*q+c[4])*q+c[5])*q + c[6]) /
+			((((d[1]*q+d[2])*q+d[3])*q+d[4])*q + 1))
 	}
-	return 0, errors.New(formulaErrorNUM)
+	return arg
 }
 
 // kth is an implementation of the formula functions LARGE and SMALL.
@@ -10340,7 +10360,14 @@ func (fn *formulaFuncs) MAXIFS(argsList *list.List) formulaArg {
 	for arg := argsList.Front().Next(); arg != nil; arg = arg.Next() {
 		args = append(args, arg.Value.(formulaArg))
 	}
-	for _, ref := range formulaIfsMatch(args) {
+	cellRefs, arg := formulaIfsMatch(args)
+	if arg.Type == ArgError {
+		return arg
+	}
+	for _, ref := range cellRefs {
+		if ref.Row >= len(maxRange) || ref.Col >= len(maxRange[ref.Row]) {
+			return newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
+		}
 		if num := maxRange[ref.Row][ref.Col].ToNumber(); num.Type == ArgNumber && maxVal < num.Number {
 			maxVal = num.Number
 		}
@@ -10483,7 +10510,14 @@ func (fn *formulaFuncs) MINIFS(argsList *list.List) formulaArg {
 	for arg := argsList.Front().Next(); arg != nil; arg = arg.Next() {
 		args = append(args, arg.Value.(formulaArg))
 	}
-	for _, ref := range formulaIfsMatch(args) {
+	cellRefs, arg := formulaIfsMatch(args)
+	if arg.Type == ArgError {
+		return arg
+	}
+	for _, ref := range cellRefs {
+		if ref.Row >= len(minRange) || ref.Col >= len(minRange[ref.Row]) {
+			return newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
+		}
 		if num := minRange[ref.Row][ref.Col].ToNumber(); num.Type == ArgNumber && minVal > num.Number {
 			minVal = num.Number
 		}
@@ -12883,16 +12917,17 @@ func (fn *formulaFuncs) EDATE(argsList *list.List) formulaArg {
 		return month
 	}
 	y, d := dateTime.Year(), dateTime.Day()
-	m := int(dateTime.Month()) + int(month.Number)
-	if month.Number < 0 {
+	m := int(dateTime.Month()) + int(month.Number) - 1
+	if m < 0 {
 		y -= int(math.Ceil(-1 * float64(m) / 12))
 	}
-	if month.Number > 11 {
+	if m > 11 {
 		y += int(math.Floor(float64(m) / 12))
 	}
 	if m = m % 12; m < 0 {
 		m += 12
 	}
+	m++
 	if d > 28 {
 		if days := getDaysInMonth(y, m); d > days {
 			d = days
@@ -15100,8 +15135,9 @@ func (fn *formulaFuncs) IF(argsList *list.List) formulaArg {
 		default:
 			result = newStringFormulaArg(value.Value())
 		}
+		return result
 	}
-	return result
+	return newBoolFormulaArg(false)
 }
 
 // Lookup and Reference Functions
@@ -15223,7 +15259,8 @@ func (fn *formulaFuncs) CHOOSE(argsList *list.List) formulaArg {
 	return arg.Value.(formulaArg)
 }
 
-// matchPatternToRegExp convert find text pattern to regular expression.
+// matchPatternToRegExp converts a wildcard pattern to a regular expression,
+// escaping literal characters.
 func matchPatternToRegExp(findText string, dbcs bool) (string, bool) {
 	var (
 		exp      string
@@ -15234,10 +15271,6 @@ func matchPatternToRegExp(findText string, dbcs bool) (string, bool) {
 		mark = "(?:(?:[\\x00-\\x0081])|(?:[\\xFF61-\\xFFA0])|(?:[\\xF8F1-\\xF8F4])|[0-9A-Za-z])"
 	}
 	for _, char := range findText {
-		if strings.ContainsAny(string(char), ".+$^[](){}|/") {
-			exp += fmt.Sprintf("\\%s", string(char))
-			continue
-		}
 		if char == '?' {
 			wildCard = true
 			exp += mark
@@ -15248,7 +15281,7 @@ func matchPatternToRegExp(findText string, dbcs bool) (string, bool) {
 			exp += ".*"
 			continue
 		}
-		exp += string(char)
+		exp += regexp.QuoteMeta(string(char))
 	}
 	return fmt.Sprintf("^%s", exp), wildCard
 }
@@ -15276,6 +15309,21 @@ func matchPattern(findText, withinText string, dbcs bool, startNum int) (int, bo
 	return offset, countUTF16String(withinText) != offset-1
 }
 
+// matchPatternWholeText reports whether the whole text matches the pattern
+// string, in which the '*' and '?' wildcards are supported. In contrast to
+// the matchPattern function, which serves the FIND and SEARCH functions and
+// reports any occurrence of the pattern, the match is anchored at both ends
+// of the text, as required by the wildcard match mode of the lookup
+// functions.
+func matchPatternWholeText(findText, withinText string) bool {
+	if !strings.ContainsAny(findText, "*?") {
+		return findText == withinText
+	}
+	exp, _ := matchPatternToRegExp(findText, false)
+	ok, _ := regexp.MatchString(fmt.Sprintf("(?s)%s$", exp), withinText)
+	return ok
+}
+
 // compareFormulaArg compares the left-hand sides and the right-hand sides'
 // formula arguments by given conditions such as case-sensitive, if exact
 // match, and make compare result as formula criteria condition type.
@@ -15297,10 +15345,8 @@ func compareFormulaArg(lhs, rhs, matchMode formulaArg, caseSensitive bool) byte 
 		if !caseSensitive {
 			ls, rs = strings.ToLower(ls), strings.ToLower(rs)
 		}
-		if matchMode.Number == matchModeWildcard {
-			if _, ok := matchPattern(rs, ls, false, 0); ok {
-				return criteriaEq
-			}
+		if matchMode.Number == matchModeWildcard && matchPatternWholeText(rs, ls) {
+			return criteriaEq
 		}
 		return map[int]byte{1: criteriaG, -1: criteriaL, 0: criteriaEq}[strings.Compare(ls, rs)]
 	case ArgEmpty:
@@ -16086,6 +16132,46 @@ func (fn *formulaFuncs) INDEX(argsList *list.List) formulaArg {
 	return cells.List[colIdx]
 }
 
+// parseIndirectR1C1 converts an absolute R1C1 reference to A1 cell reference.
+func parseIndirectR1C1(ref string) (cell string, err error) {
+	parts := strings.Split(strings.TrimLeft(ref, "R"), "C")
+	if len(parts) != 2 {
+		return "", errors.New("invalid reference")
+	}
+	row, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return
+	}
+	col, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return
+	}
+	cell, err = CoordinatesToCellName(col, row)
+	return
+}
+
+// parseIndirectSheetRef splits the reference text of the INDIRECT function into
+// the worksheet name and the cell reference. A worksheet name which contains
+// spaces has to be enclosed in single quotes, an embedded single quote is
+// doubled. The returned flag reports whether the reference text is well-formed.
+func parseIndirectSheetRef(refText string) (sheet, cellRef string, ok bool) {
+	if strings.HasPrefix(refText, "'") {
+		idx := strings.LastIndex(refText, "'!")
+		if idx < 1 {
+			return "", "", false
+		}
+		sheet, cellRef = strings.ReplaceAll(refText[1:idx], "''", "'"), refText[idx+2:]
+	} else if before, after, ok := strings.Cut(refText, "!"); ok {
+		if sheet, cellRef = before, after; sheet == "" ||
+			strings.ContainsAny(sheet, " \t") {
+			return "", "", false
+		}
+	} else {
+		cellRef = refText
+	}
+	return sheet, cellRef, !strings.Contains(cellRef, "!")
+}
+
 // INDIRECT function converts a text string into a cell reference. The syntax
 // of the Indirect function is:
 //
@@ -16101,49 +16187,39 @@ func (fn *formulaFuncs) INDIRECT(argsList *list.List) formulaArg {
 			return newErrorFormulaArg(formulaErrorVALUE, formulaErrorVALUE)
 		}
 	}
-	R1C1ToA1 := func(ref string) (cell string, err error) {
-		parts := strings.Split(strings.TrimLeft(ref, "R"), "C")
-		if len(parts) != 2 {
-			return
-		}
-		row, err := strconv.Atoi(parts[0])
-		if err != nil {
-			return
-		}
-		col, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return
-		}
-		cell, err = CoordinatesToCellName(col, row)
-		return
+	sheet, cellRef, ok := parseIndirectSheetRef(refText)
+	if !ok {
+		return newErrorFormulaArg(formulaErrorREF, formulaErrorREF)
 	}
-	refs := strings.Split(refText, ":")
+	if sheet == "" {
+		sheet = fn.sheet
+	}
+	refs := strings.Split(cellRef, ":")
 	fromRef, toRef := refs[0], ""
 	if len(refs) == 2 {
 		toRef = refs[1]
 	}
 	if a1.Number == 0 {
-		from, err := R1C1ToA1(refs[0])
+		from, err := parseIndirectR1C1(refs[0])
 		if err != nil {
 			return newErrorFormulaArg(formulaErrorREF, formulaErrorREF)
 		}
 		fromRef = from
 		if len(refs) == 2 {
-			to, err := R1C1ToA1(refs[1])
+			to, err := parseIndirectR1C1(refs[1])
 			if err != nil {
 				return newErrorFormulaArg(formulaErrorREF, formulaErrorREF)
 			}
 			toRef = to
 		}
 	}
-	if len(refs) == 1 {
-		value, err := fn.f.GetCellValue(fn.sheet, fromRef)
-		if err != nil {
-			return newErrorFormulaArg(formulaErrorREF, formulaErrorREF)
-		}
-		return newStringFormulaArg(value)
+	if len(refs) == 2 {
+		fromRef += ":" + toRef
 	}
-	arg, _ := fn.f.parseReference(fn.ctx, fn.sheet, fromRef+":"+toRef)
+	arg, err := fn.f.parseReference(fn.ctx, sheet, fromRef)
+	if err != nil {
+		return newErrorFormulaArg(formulaErrorREF, formulaErrorREF)
+	}
 	return arg
 }
 

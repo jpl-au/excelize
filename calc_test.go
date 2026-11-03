@@ -790,29 +790,32 @@ func TestCalcCellValue(t *testing.T) {
 		"ROUNDUP(-11.111,-1)":        "-20",
 		"ROUNDUP(ROUNDUP(100,1),-1)": "100",
 		// SEARCH
-		"SEARCH(\"s\",F1)":           "1",
-		"SEARCH(\"s\",F1,2)":         "5",
-		"SEARCH(\"e\",F1)":           "4",
-		"SEARCH(\"e*\",F1)":          "4",
-		"SEARCH(\"?e\",F1)":          "3",
-		"SEARCH(\"??e\",F1)":         "2",
-		"SEARCH(6,F2)":               "2",
-		"SEARCH(\"?\",\"你好world\")":  "1",
-		"SEARCH(\"?l\",\"你好world\")": "5",
-		"SEARCH(\"?+\",\"你好 1+2\")":  "4",
-		"SEARCH(\" ?+\",\"你好 1+2\")": "3",
+		"SEARCH(\"s\",F1)":                                  "1",
+		"SEARCH(\"s\",F1,2)":                                "5",
+		"SEARCH(\"e\",F1)":                                  "4",
+		"SEARCH(\"e*\",F1)":                                 "4",
+		"SEARCH(\"?e\",F1)":                                 "3",
+		"SEARCH(\"??e\",F1)":                                "2",
+		"SEARCH(6,F2)":                                      "2",
+		"SEARCH(\"?\",\"\u4F60\u597Dworld\")":               "1",
+		"SEARCH(\"?l\",\"\u4F60\u597Dworld\")":              "5",
+		"SEARCH(\"?+\",\"\u4F60\u597D 1+2\")":               "4",
+		"SEARCH(\" ?+\",\"\u4F60\u597D 1+2\")":              "3",
+		"SEARCH(\"\\?\",\"C:\\one C:\\two\",4)":             "10",
+		"SEARCH(\"\\?eports\",\"prefix C:\\reports done\")": "10",
 		// SEARCHB
-		"SEARCHB(\"s\",F1)":           "1",
-		"SEARCHB(\"s\",F1,2)":         "5",
-		"SEARCHB(\"e\",F1)":           "4",
-		"SEARCHB(\"e*\",F1)":          "4",
-		"SEARCHB(\"?e\",F1)":          "3",
-		"SEARCHB(\"??e\",F1)":         "2",
-		"SEARCHB(6,F2)":               "2",
-		"SEARCHB(\"?\",\"你好world\")":  "5",
-		"SEARCHB(\"?l\",\"你好world\")": "7",
-		"SEARCHB(\"?+\",\"你好 1+2\")":  "6",
-		"SEARCHB(\" ?+\",\"你好 1+2\")": "5",
+		"SEARCHB(\"s\",F1)":                                  "1",
+		"SEARCHB(\"s\",F1,2)":                                "5",
+		"SEARCHB(\"e\",F1)":                                  "4",
+		"SEARCHB(\"e*\",F1)":                                 "4",
+		"SEARCHB(\"?e\",F1)":                                 "3",
+		"SEARCHB(\"??e\",F1)":                                "2",
+		"SEARCHB(6,F2)":                                      "2",
+		"SEARCHB(\"?\",\"\u4F60\u597Dworld\")":               "5",
+		"SEARCHB(\"?l\",\"\u4F60\u597Dworld\")":              "7",
+		"SEARCHB(\"?+\",\"\u4F60\u597D 1+2\")":               "6",
+		"SEARCHB(\" ?+\",\"\u4F60\u597D 1+2\")":              "5",
+		"SEARCHB(\"\\?eports\",\"prefix C:\\reports done\")": "10",
 		// SEC
 		"_xlfn.SEC(-3.14159265358979)": "-1",
 		"_xlfn.SEC(0)":                 "1",
@@ -940,6 +943,10 @@ func TestCalcCellValue(t *testing.T) {
 		"A1/A2/SUM(A1:A2:B1)*A3":             "0.125",
 		"SUM(B1:D1)":                         "4",
 		"SUM(\"X\")":                         "0",
+		"SUM(INDIRECT(\"$A$1\"))":            "1",
+		"SUM(INDIRECT(\"A1:B2\"))":           "12",
+		"SUM(INDIRECT(\"A1:B2\",TRUE))":      "12",
+		"SUM(INDIRECT(\"R1C1:R2C2\",FALSE))": "12",
 		// SUMIF
 		"SUMIF(F1:F5, \"\")":             "0",
 		"SUMIF(A1:A5, \"3\")":            "3",
@@ -1115,6 +1122,7 @@ func TestCalcCellValue(t *testing.T) {
 		"COUNT(\"5\",2)":                       "2",
 		"COUNT({\"5\"},\"5\")":                 "1",
 		"COUNT(TRUE,1)":                        "2",
+		"COUNT(INDIRECT(\"A1\"))":              "1",
 		// COUNTA
 		"COUNTA()":                              "0",
 		"COUNTA(\"\")":                          "1",
@@ -1125,10 +1133,8 @@ func TestCalcCellValue(t *testing.T) {
 		"COUNTA(COUNTA(1),MUNIT(1))":            "2",
 		"COUNTA(D1:D2)":                         "2",
 		// COUNTBLANK
-		"COUNTBLANK(MUNIT(1))": "0",
-		"COUNTBLANK(1)":        "0",
-		"COUNTBLANK(B1:C1)":    "1",
-		"COUNTBLANK(C1)":       "0",
+		"COUNTBLANK(B1:C1)": "1",
+		"COUNTBLANK(C1)":    "0",
 		// COUNTIF
 		"COUNTIF(D1:D9,\"Jan\")":     "4",
 		"COUNTIF(D1:D9,\"<>Jan\")":   "5",
@@ -1331,7 +1337,7 @@ func TestCalcCellValue(t *testing.T) {
 		"MAXA(INT(1))":     "1",
 		"MAXA(A1:B4,MUNIT(1),INT(0),1,E1:F2,\"\")": "36693",
 		// MAXIFS
-		"MAXIFS(F2:F4,A2:A4,\">0\")": "36693",
+		"_xlfn.MAXIFS(F2:F4,A2:A4,\">0\")": "36693",
 		// MDETERM
 		"MDETERM(A1:B2)": "-3",
 		// MEDIAN
@@ -1356,7 +1362,7 @@ func TestCalcCellValue(t *testing.T) {
 		"MINA(INT(1))":      "1",
 		"MINA(A1:B4,MUNIT(1),INT(0),1,E1:F2,\"\")": "0",
 		// MINIFS
-		"MINIFS(F2:F4,A2:A4,\">0\")": "22100",
+		"_xlfn.MINIFS(F2:F4,A2:A4,\">0\")": "22100",
 		// PEARSON
 		"PEARSON(A1:A4,B1:B4)": "1",
 		// PERCENTILE.EXC
@@ -1535,24 +1541,25 @@ func TestCalcCellValue(t *testing.T) {
 		"ISNONTEXT(\"Excelize\")": "FALSE",
 		"ISNONTEXT(NA())":         "TRUE",
 		// ISNUMBER
-		"ISNUMBER(A1)":      "TRUE",
-		"ISNUMBER(D1)":      "FALSE",
-		"ISNUMBER(A1:B1)":   "TRUE",
-		"ISNUMBER(0)":       "TRUE",
-		"ISNUMBER(1)":       "TRUE",
-		"ISNUMBER(\"1\")":   "FALSE",
-		"ISNUMBER(TRUE)":    "FALSE",
-		"ISNUMBER(FALSE)":   "FALSE",
-		"ISNUMBER(TRUE())":  "FALSE",
-		"ISNUMBER(FALSE())": "FALSE",
-		"ISNUMBER(1=1)":     "FALSE",
-		"ISNUMBER(1=2)":     "FALSE",
-		"ISNUMBER({TRUE})":  "FALSE",
-		"ISNUMBER({FALSE})": "FALSE",
-		"ISNUMBER(OR(1))":   "FALSE",
-		"ISNUMBER(OR(0))":   "FALSE",
-		"ISNUMBER(OR(1)*1)": "TRUE",
-		"ISNUMBER(OR(0)*1)": "TRUE",
+		"ISNUMBER(A1)":               "TRUE",
+		"ISNUMBER(D1)":               "FALSE",
+		"ISNUMBER(A1:B1)":            "TRUE",
+		"ISNUMBER(0)":                "TRUE",
+		"ISNUMBER(1)":                "TRUE",
+		"ISNUMBER(\"1\")":            "FALSE",
+		"ISNUMBER(TRUE)":             "FALSE",
+		"ISNUMBER(FALSE)":            "FALSE",
+		"ISNUMBER(TRUE())":           "FALSE",
+		"ISNUMBER(FALSE())":          "FALSE",
+		"ISNUMBER(1=1)":              "FALSE",
+		"ISNUMBER(1=2)":              "FALSE",
+		"ISNUMBER({TRUE})":           "FALSE",
+		"ISNUMBER({FALSE})":          "FALSE",
+		"ISNUMBER(OR(1))":            "FALSE",
+		"ISNUMBER(OR(0))":            "FALSE",
+		"ISNUMBER(OR(1)*1)":          "TRUE",
+		"ISNUMBER(OR(0)*1)":          "TRUE",
+		"ISNUMBER(INDIRECT(\"A1\"))": "TRUE",
 		// ISODD
 		"ISODD(A1)": "TRUE",
 		"ISODD(A2)": "FALSE",
@@ -1562,9 +1569,10 @@ func TestCalcCellValue(t *testing.T) {
 		"ISREF(\"text\")": "FALSE",
 		"ISREF(B1*B2)":    "FALSE",
 		// ISTEXT
-		"ISTEXT(D1)":    "TRUE",
-		"ISTEXT(A1)":    "FALSE",
-		"ISTEXT(OR(1))": "FALSE",
+		"ISTEXT(D1)":               "TRUE",
+		"ISTEXT(A1)":               "FALSE",
+		"ISTEXT(OR(1))":            "FALSE",
+		"ISTEXT(INDIRECT(\"E1\"))": "TRUE",
 		// N
 		"N(10)":     "10",
 		"N(\"10\")": "10",
@@ -1714,6 +1722,9 @@ func TestCalcCellValue(t *testing.T) {
 		"EDATE(\"01/31/2020\",1)":  "43890",
 		"EDATE(\"01/29/2020\",12)": "44225",
 		"EDATE(\"6/12/2021\",-14)": "43933",
+		"EDATE(\"12/15/2023\",1)":  "45306",
+		"EDATE(\"01/15/2023\",11)": "45275",
+		"EDATE(\"06/30/2023\",8)":  "45351",
 		// EOMONTH
 		"EOMONTH(\"01/01/2021\",-1)":  "44196",
 		"EOMONTH(\"01/29/2020\",12)":  "44227",
@@ -1791,6 +1802,11 @@ func TestCalcCellValue(t *testing.T) {
 		"TIMEVALUE(\"01/01/2011 02:23\")": "0.0993055555555555",
 		// WEEKDAY
 		"WEEKDAY(0)":                 "7",
+		"WEEKDAY(1)":                 "1",
+		"WEEKDAY(31)":                "3",
+		"WEEKDAY(59)":                "3",
+		"WEEKDAY(60)":                "4",
+		"WEEKDAY(61)":                "5",
 		"WEEKDAY(47119)":             "2",
 		"WEEKDAY(\"12/25/2012\")":    "3",
 		"WEEKDAY(\"12/25/2012\",1)":  "3",
@@ -1883,33 +1899,35 @@ func TestCalcCellValue(t *testing.T) {
 		"FIXED(5123.591,-5)":      "0",
 		"FIXED(-77262.23973,-5)":  "-100,000",
 		// FIND
-		"FIND(\"T\",\"Original Text\")":   "10",
-		"FIND(\"t\",\"Original Text\")":   "13",
-		"FIND(\"i\",\"Original Text\")":   "3",
-		"FIND(\"i\",\"Original Text\",4)": "5",
-		"FIND(\"\",\"Original Text\")":    "1",
-		"FIND(\"\",\"Original Text\",2)":  "2",
-		"FIND(\"s\",\"Sales\",2)":         "5",
-		"FIND(D1:E2,\"Month\")":           "1",
+		"FIND(\"T\",\"Original Text\")":             "10",
+		"FIND(\"t\",\"Original Text\")":             "13",
+		"FIND(\"i\",\"Original Text\")":             "3",
+		"FIND(\"i\",\"Original Text\",4)":           "5",
+		"FIND(\"\",\"Original Text\")":              "1",
+		"FIND(\"\",\"Original Text\",2)":            "2",
+		"FIND(\"s\",\"Sales\",2)":                   "5",
+		"FIND(D1:E2,\"Month\")":                     "1",
+		"FIND(\"\\\",\"prefix C:\\Original Text\")": "10",
 		// FINDB
-		"FINDB(\"T\",\"Original Text\")":   "10",
-		"FINDB(\"t\",\"Original Text\")":   "13",
-		"FINDB(\"i\",\"Original Text\")":   "3",
-		"FINDB(\"i\",\"Original Text\",4)": "5",
-		"FINDB(\"\",\"Original Text\")":    "1",
-		"FINDB(\"\",\"Original Text\",2)":  "2",
-		"FINDB(\"s\",\"Sales\",2)":         "5",
+		"FINDB(\"T\",\"Original Text\")":             "10",
+		"FINDB(\"t\",\"Original Text\")":             "13",
+		"FINDB(\"i\",\"Original Text\")":             "3",
+		"FINDB(\"i\",\"Original Text\",4)":           "5",
+		"FINDB(\"\",\"Original Text\")":              "1",
+		"FINDB(\"\",\"Original Text\",2)":            "2",
+		"FINDB(\"s\",\"Sales\",2)":                   "5",
+		"FINDB(\"\\\",\"prefix C:\\Original Text\")": "10",
 		// LEFT
-		"LEFT(\"Original Text\")":    "O",
-		"LEFT(\"Original Text\",4)":  "Orig",
-		"LEFT(\"Original Text\",0)":  "",
-		"LEFT(\"Original Text\",13)": "Original Text",
-		"LEFT(\"Original Text\",20)": "Original Text",
-		"LEFT(\"オリジナルテキスト\")":        "オ",
-		"LEFT(\"オリジナルテキスト\",2)":      "オリ",
-		"LEFT(\"オリジナルテキスト\",5)":      "オリジナル",
-		"LEFT(\"オリジナルテキスト\",7)":      "オリジナルテキ",
-		"LEFT(\"オリジナルテキスト\",20)":     "オリジナルテキスト",
+		"LEFT(\"Original Text\")":                                             "O",
+		"LEFT(\"Original Text\",4)":                                           "Orig",
+		"LEFT(\"Original Text\",0)":                                           "",
+		"LEFT(\"Original Text\",13)":                                          "Original Text",
+		"LEFT(\"Original Text\",20)":                                          "Original Text",
+		"LEFT(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\")":    "オ",
+		"LEFT(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",2)":  "オリ",
+		"LEFT(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",5)":  "オリジナル",
+		"LEFT(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",7)":  "オリジナルテキ",
+		"LEFT(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",20)": "オリジナルテキスト",
 		"LEFT(\"\")":                           "",
 		"LEFT(\"\U0001D7D9\U0001D7D9\")":       "\U0001D7D9",
 		"LEFT(\"\U0001D7D9\U0001D7D9\",0)":     "",
@@ -1960,21 +1978,21 @@ func TestCalcCellValue(t *testing.T) {
 		"LOWER(\"Test\")":     "test",
 		"LOWER(\"TEST 123\")": "test 123",
 		// MID
-		"MID(\"Original Text\",7,1)": "a",
-		"MID(\"Original Text\",4,7)": "ginal T",
-		"MID(\"255 years\",3,1)":     "5",
-		"MID(\"text\",3,6)":          "xt",
-		"MID(\"text\",6,0)":          "",
-		"MID(\"你好World\",5,1)":       "r",
+		"MID(\"Original Text\",7,1)":     "a",
+		"MID(\"Original Text\",4,7)":     "ginal T",
+		"MID(\"255 years\",3,1)":         "5",
+		"MID(\"text\",3,6)":              "xt",
+		"MID(\"text\",6,0)":              "",
+		"MID(\"\u4F60\u597DWorld\",5,1)": "r",
 		"MID(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",6,4)": "\u30C6\u30AD\u30B9\u30C8",
 		"MID(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",3,5)": "\u30B8\u30CA\u30EB\u30C6\u30AD",
 		// MIDB
-		"MIDB(\"Original Text\",7,1)": "a",
-		"MIDB(\"Original Text\",4,7)": "ginal T",
-		"MIDB(\"255 years\",3,1)":     "5",
-		"MIDB(\"text\",3,6)":          "xt",
-		"MIDB(\"text\",6,0)":          "",
-		"MIDB(\"你好World\",5,1)":       "W",
+		"MIDB(\"Original Text\",7,1)":     "a",
+		"MIDB(\"Original Text\",4,7)":     "ginal T",
+		"MIDB(\"255 years\",3,1)":         "5",
+		"MIDB(\"text\",3,6)":              "xt",
+		"MIDB(\"text\",6,0)":              "",
+		"MIDB(\"\u4F60\u597DWorld\",5,1)": "W",
 		"MIDB(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",6,4)": "\u30B8\u30CA",
 		"MIDB(\"\u30AA\u30EA\u30B8\u30CA\u30EB\u30C6\u30AD\u30B9\u30C8\",3,5)": "\u30EA\u30B8\xe3",
 		// PROPER
@@ -2155,6 +2173,8 @@ func TestCalcCellValue(t *testing.T) {
 		"IF(2>0,(1),4)":                           "1",
 		"IF(2>0,(A1)*2.5,4)":                      "2.5",
 		"IF(VALUE(B3)=1,0,1)":                     "1",
+		"IF(1=2,1)":                               "FALSE",
+		"IF(1=2,1,IF(1=2,1))*2":                   "0",
 		// Excel Lookup and Reference Functions
 		// ADDRESS
 		"ADDRESS(1,1,1,TRUE)":            "$A$1",
@@ -2196,25 +2216,49 @@ func TestCalcCellValue(t *testing.T) {
 		"COLUMNS(E5:B1)":                "4",
 		"COLUMNS(EM38:HZ81)":            "92",
 		// HLOOKUP
-		"HLOOKUP(D2,D2:D8,1,FALSE)":          "Jan",
-		"HLOOKUP(F3,F3:F8,3,FALSE)":          "34440",
-		"HLOOKUP(INT(F3),F3:F8,3,FALSE)":     "34440",
-		"HLOOKUP(MUNIT(1),MUNIT(1),1,FALSE)": "1",
+		"HLOOKUP(\"*\\\",{\"price$tail\",\"folder\\\";88,110},2,FALSE)": "110",
+		"HLOOKUP(\"001\",{\"46027-001\",\"001\";22,77},2,FALSE)":        "77",
+		"HLOOKUP(\"46027*\",{\"46027-001\";22},2,FALSE)":                "22",
+		"HLOOKUP(\"C:\\?eports\",{\"C:\\reports\";99},2,FALSE)":         "99",
+		"HLOOKUP(\"C:\\*\",{\"C:\\reports\";99},2,FALSE)":               "99",
+		"HLOOKUP(D2,D2:D8,1,FALSE)":                                     "Jan",
+		"HLOOKUP(F3,F3:F8,3,FALSE)":                                     "34440",
+		"HLOOKUP(INT(F3),F3:F8,3,FALSE)":                                "34440",
+		"HLOOKUP(MUNIT(1),MUNIT(1),1,FALSE)":                            "1",
 		// HYPERLINK
 		"HYPERLINK(\"https://github.com/xuri/excelize\")":              "https://github.com/xuri/excelize",
 		"HYPERLINK(\"https://github.com/xuri/excelize\",\"Excelize\")": "Excelize",
 		// VLOOKUP
-		"VLOOKUP(D2,D:D,1,FALSE)":            "Jan",
-		"VLOOKUP(D2,D1:D10,1)":               "Jan",
-		"VLOOKUP(D2,D1:D11,1)":               "Feb",
-		"VLOOKUP(D2,D1:D10,1,FALSE)":         "Jan",
-		"VLOOKUP(INT(36693),F2:F2,1,FALSE)":  "36693",
-		"VLOOKUP(INT(F2),F3:F9,1)":           "32080",
-		"VLOOKUP(INT(F2),F3:F9,1,TRUE)":      "32080",
-		"VLOOKUP(MUNIT(3),MUNIT(3),1)":       "0",
+		"VLOOKUP(\"???\",{\"46027-001\",22;\"001\",77},2,FALSE)":             "77",
+		"VLOOKUP(\"?6027-001\",{\"45665-003\",11;\"46027-001\",22},2,FALSE)": "22",
+		"VLOOKUP(\"*-001\",{\"45665-003\",11;\"46027-001\",22},2,FALSE)":     "22",
+		"VLOOKUP(\"*\",{\"45665-003\",11;\"46027-001\",22},2,FALSE)":         "11",
+		"VLOOKUP(\"*\\\",{\"price$tail\",88;\"folder\\\",110},2,FALSE)":      "110",
+		"VLOOKUP(\"001\",{\"46027-001\",22;\"001\",77},2,FALSE)":             "77",
+		"VLOOKUP(\"46027-00?\",{\"46027-001\",22},2,FALSE)":                  "22",
+		"VLOOKUP(\"46027*\",{\"45665-003\",11;\"46027-001\",22},2,FALSE)":    "22",
+		"VLOOKUP(\"C:\\?eports\",{\"C:\\reports\",99},2,FALSE)":              "99",
+		"VLOOKUP(\"C:\\*\",{\"C:\\reports\",99},2,FALSE)":                    "99",
+		"VLOOKUP(\"C:\\reports\",{\"C:\\reports\",99},2,FALSE)":              "99",
+		"VLOOKUP(\"mixed\",{\"MiXeD\",66},2,FALSE)":                          "66",
 		"VLOOKUP(A1,A3:B5,1)":                "0",
 		"VLOOKUP(A1:A2,A1:A1,1)":             "1",
+		"VLOOKUP(D2,D:D,1,FALSE)":            "Jan",
+		"VLOOKUP(D2,D1:D10,1,FALSE)":         "Jan",
+		"VLOOKUP(D2,D1:D10,1)":               "Jan",
+		"VLOOKUP(D2,D1:D11,1)":               "Feb",
+		"VLOOKUP(INT(36693),F2:F2,1,FALSE)":  "36693",
+		"VLOOKUP(INT(F2),F3:F9,1,TRUE)":      "32080",
+		"VLOOKUP(INT(F2),F3:F9,1)":           "32080",
 		"VLOOKUP(MUNIT(1),MUNIT(1),1,FALSE)": "1",
+		"VLOOKUP(MUNIT(3),MUNIT(3),1)":       "0",
+		// XLOOKUP
+		"XLOOKUP(\"-001\",{\"46027-001\";\"001\"},{22;77},\"NF\",2)":       "NF",
+		"XLOOKUP(\"*\\\",{\"price$tail\";\"folder\\\"},{88;110},\"NF\",2)": "110",
+		"XLOOKUP(\"*\\\",{\"price$tail\"},{88},\"NF\",2)":                  "NF",
+		"XLOOKUP(\"001\",{\"46027-001\";\"001\"},{22;77},\"NF\",2)":        "77",
+		"XLOOKUP(\"C:\\?eports\",{\"C:\\reports\"},{99},\"NF\",2)":         "99",
+		"XLOOKUP(\"C:\\*\",{\"C:\\reports\"},{99},\"NF\",2)":               "99",
 		// INDEX
 		"INDEX(0,0,0)":               "0",
 		"INDEX(A1,0,0)":              "1",
@@ -2224,15 +2268,17 @@ func TestCalcCellValue(t *testing.T) {
 		"INDEX(MINVERSE(A1:B2),2,1)": "0.666666666666667",
 		"INDEX(MINVERSE(A1:B2),2,2)": "-0.333333333333333",
 		// INDIRECT
-		"INDIRECT(\"E1\")":                   "Team",
-		"INDIRECT(\"E\"&1)":                  "Team",
-		"INDIRECT(\"E\"&ROW())":              "Team",
-		"INDIRECT(\"E\"&ROW(),TRUE)":         "Team",
-		"INDIRECT(\"R1C5\",FALSE)":           "Team",
-		"INDIRECT(\"R\"&1&\"C\"&5,FALSE)":    "Team",
-		"SUM(INDIRECT(\"A1:B2\"))":           "12",
-		"SUM(INDIRECT(\"A1:B2\",TRUE))":      "12",
-		"SUM(INDIRECT(\"R1C1:R2C2\",FALSE))": "12",
+		"INDIRECT(\"E1\")":                "Team",
+		"INDIRECT(\"E\"&1)":               "Team",
+		"INDIRECT(\"E\"&ROW())":           "Team",
+		"INDIRECT(\"E\"&ROW(),TRUE)":      "Team",
+		"INDIRECT(\"R1C5\",FALSE)":        "Team",
+		"INDIRECT(\"R\"&1&\"C\"&5,FALSE)": "Team",
+		"INDIRECT(\"$A$1\")":              "1",
+		"INDIRECT(\"A1\")":                "1",
+		"INDIRECT(\"A1:A1\")":             "1",
+		"INDIRECT(\"R2C2\",FALSE)":        "5",
+		"INDIRECT(\"R1C1\",FALSE)":        "1",
 		// LOOKUP
 		"LOOKUP(F8,F8:F9,F8:F9)":      "32080",
 		"LOOKUP(F8,F8:F9,D8:D9)":      "Feb",
@@ -3048,11 +3094,11 @@ func TestCalcCellValue(t *testing.T) {
 		"SEARCH(2,A1)":      {"#VALUE!", "#VALUE!"},
 		"SEARCH(1,A1,\"\")": {"#VALUE!", "strconv.ParseFloat: parsing \"\": invalid syntax"},
 		// SEARCHB
-		"SEARCHB()":                   {"#VALUE!", "SEARCHB requires at least 2 arguments"},
-		"SEARCHB(1,A1,1,1)":           {"#VALUE!", "SEARCHB allows at most 3 arguments"},
-		"SEARCHB(2,A1)":               {"#VALUE!", "#VALUE!"},
-		"SEARCHB(\"?w\",\"你好world\")": {"#VALUE!", "#VALUE!"},
-		"SEARCHB(1,A1,\"\")":          {"#VALUE!", "strconv.ParseFloat: parsing \"\": invalid syntax"},
+		"SEARCHB()":                             {"#VALUE!", "SEARCHB requires at least 2 arguments"},
+		"SEARCHB(1,A1,1,1)":                     {"#VALUE!", "SEARCHB allows at most 3 arguments"},
+		"SEARCHB(2,A1)":                         {"#VALUE!", "#VALUE!"},
+		"SEARCHB(\"?w\",\"\u4F60\u597Dworld\")": {"#VALUE!", "#VALUE!"},
+		"SEARCHB(1,A1,\"\")":                    {"#VALUE!", "strconv.ParseFloat: parsing \"\": invalid syntax"},
 		// SEC
 		"_xlfn.SEC()":      {"#VALUE!", "SEC requires 1 numeric argument"},
 		"_xlfn.SEC(\"X\")": {"#VALUE!", "strconv.ParseFloat: parsing \"X\": invalid syntax"},
@@ -3344,8 +3390,12 @@ func TestCalcCellValue(t *testing.T) {
 		// COUNTIF
 		"COUNTIF()": {"#VALUE!", "COUNTIF requires 2 arguments"},
 		// COUNTIFS
-		"COUNTIFS()":              {"#VALUE!", "COUNTIFS requires at least 2 arguments"},
-		"COUNTIFS(A1:A9,2,D1:D9)": {"#N/A", "#N/A"},
+		"COUNTIFS()":                                  {"#VALUE!", "COUNTIFS requires at least 2 arguments"},
+		"COUNTIFS(A1:A9,2,D1:D9)":                     {"#N/A", "#N/A"},
+		"COUNTIFS(A1:A9,\">0\",1,\">0\")":             {"#VALUE!", "#VALUE!"},
+		"COUNTIFS(A1:A9,2,B1:B1,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"COUNTIFS(A1:B2,\">0\",A1:A2,\">0\")":         {"#VALUE!", "#VALUE!"},
+		"COUNTIFS(A1:A9,2,B1:B9,\">0\",B1:B1,\">0\")": {"#VALUE!", "#VALUE!"},
 		// CRITBINOM
 		"CRITBINOM()":             {"#VALUE!", "CRITBINOM requires 3 numeric arguments"},
 		"CRITBINOM(\"\",0.5,20%)": {"#VALUE!", "strconv.ParseFloat: parsing \"\": invalid syntax"},
@@ -3640,8 +3690,8 @@ func TestCalcCellValue(t *testing.T) {
 		"MAXA()":     {"#VALUE!", "MAXA requires at least 1 argument"},
 		"MAXA(NA())": {"#N/A", "#N/A"},
 		// MAXIFS
-		"MAXIFS()":                         {"#VALUE!", "MAXIFS requires at least 3 arguments"},
-		"MAXIFS(F2:F4,A2:A4,\">0\",D2:D9)": {"#N/A", "#N/A"},
+		"_xlfn.MAXIFS()":                         {"#VALUE!", "MAXIFS requires at least 3 arguments"},
+		"_xlfn.MAXIFS(F2:F4,A2:A4,\">0\",D2:D9)": {"#N/A", "#N/A"},
 		// MEDIAN
 		"MEDIAN()":      {"#VALUE!", "MEDIAN requires at least 1 argument"},
 		"MEDIAN(\"\")":  {"#VALUE!", "strconv.ParseFloat: parsing \"\": invalid syntax"},
@@ -3653,8 +3703,8 @@ func TestCalcCellValue(t *testing.T) {
 		"MINA()":     {"#VALUE!", "MINA requires at least 1 argument"},
 		"MINA(NA())": {"#N/A", "#N/A"},
 		// MINIFS
-		"MINIFS()":                         {"#VALUE!", "MINIFS requires at least 3 arguments"},
-		"MINIFS(F2:F4,A2:A4,\"<0\",D2:D9)": {"#N/A", "#N/A"},
+		"_xlfn.MINIFS()":                         {"#VALUE!", "MINIFS requires at least 3 arguments"},
+		"_xlfn.MINIFS(F2:F4,A2:A4,\"<0\",D2:D9)": {"#N/A", "#N/A"},
 		// PEARSON
 		"PEARSON()":            {"#VALUE!", "PEARSON requires 2 arguments"},
 		"PEARSON(A1:A2,B1:B1)": {"#N/A", "#N/A"},
@@ -4289,18 +4339,21 @@ func TestCalcCellValue(t *testing.T) {
 		"FORMULATEXT()":  {"#VALUE!", "FORMULATEXT requires 1 argument"},
 		"FORMULATEXT(1)": {"#VALUE!", "#VALUE!"},
 		// HLOOKUP
-		"HLOOKUP()":                     {"#VALUE!", "HLOOKUP requires at least 3 arguments"},
-		"HLOOKUP(D2,D1,1,FALSE)":        {"#VALUE!", "HLOOKUP requires second argument of table array"},
-		"HLOOKUP(D2,D:D,FALSE,FALSE)":   {"#VALUE!", "HLOOKUP requires numeric row argument"},
-		"HLOOKUP(D2,D:D,1,FALSE,FALSE)": {"#VALUE!", "HLOOKUP requires at most 4 arguments"},
-		"HLOOKUP(D2,D:D,1,2)":           {"#N/A", "HLOOKUP no result found"},
-		"HLOOKUP(D2,D10:D10,1,FALSE)":   {"#N/A", "HLOOKUP no result found"},
-		"HLOOKUP(D2,D2:D3,4,FALSE)":     {"#N/A", "HLOOKUP has invalid row index"},
-		"HLOOKUP(D2,C:C,1,FALSE)":       {"#N/A", "HLOOKUP no result found"},
-		"HLOOKUP(ISNUMBER(1),F3:F9,1)":  {"#N/A", "HLOOKUP no result found"},
-		"HLOOKUP(INT(1),E2:E9,1)":       {"#N/A", "HLOOKUP no result found"},
-		"HLOOKUP(MUNIT(2),MUNIT(3),1)":  {"#N/A", "HLOOKUP no result found"},
-		"HLOOKUP(A1:B2,B2:B3,1)":        {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP()":                                    {"#VALUE!", "HLOOKUP requires at least 3 arguments"},
+		"HLOOKUP(D2,D1,1,FALSE)":                       {"#VALUE!", "HLOOKUP requires second argument of table array"},
+		"HLOOKUP(D2,D:D,FALSE,FALSE)":                  {"#VALUE!", "HLOOKUP requires numeric row argument"},
+		"HLOOKUP(D2,D:D,1,FALSE,FALSE)":                {"#VALUE!", "HLOOKUP requires at most 4 arguments"},
+		"HLOOKUP(D2,D:D,1,2)":                          {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(D2,D10:D10,1,FALSE)":                  {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(D2,D2:D3,4,FALSE)":                    {"#N/A", "HLOOKUP has invalid row index"},
+		"HLOOKUP(D2,C:C,1,FALSE)":                      {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(ISNUMBER(1),F3:F9,1)":                 {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(INT(1),E2:E9,1)":                      {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(MUNIT(2),MUNIT(3),1)":                 {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(A1:B2,B2:B3,1)":                       {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(\"-001\",{\"46027-001\";22},2,FALSE)": {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(\"\",{\"46027-001\";22},2,FALSE)":     {"#N/A", "HLOOKUP no result found"},
+		"HLOOKUP(\"*\\\",{\"price$tail\";88},2,FALSE)": {"#N/A", "HLOOKUP no result found"},
 		// MATCH
 		"MATCH()":              {"#VALUE!", "MATCH requires 1 or 2 arguments"},
 		"MATCH(0,A1:A1,0,0)":   {"#VALUE!", "MATCH requires 1 or 2 arguments"},
@@ -4314,17 +4367,24 @@ func TestCalcCellValue(t *testing.T) {
 		"HYPERLINK()": {"#VALUE!", "HYPERLINK requires at least 1 argument"},
 		"HYPERLINK(\"https://github.com/xuri/excelize\",\"Excelize\",\"\")": {"#VALUE!", "HYPERLINK allows at most 2 arguments"},
 		// VLOOKUP
-		"VLOOKUP()":                     {"#VALUE!", "VLOOKUP requires at least 3 arguments"},
-		"VLOOKUP(D2,D1,1,FALSE)":        {"#VALUE!", "VLOOKUP requires second argument of table array"},
-		"VLOOKUP(D2,D:D,FALSE,FALSE)":   {"#VALUE!", "VLOOKUP requires numeric col argument"},
-		"VLOOKUP(D2,D:D,1,FALSE,FALSE)": {"#VALUE!", "VLOOKUP requires at most 4 arguments"},
-		"VLOOKUP(D2,D10:D10,1,FALSE)":   {"#N/A", "VLOOKUP no result found"},
-		"VLOOKUP(D2,D:D,2,FALSE)":       {"#N/A", "VLOOKUP has invalid column index"},
-		"VLOOKUP(D2,C:C,1,FALSE)":       {"#N/A", "VLOOKUP no result found"},
-		"VLOOKUP(ISNUMBER(1),F3:F9,1)":  {"#N/A", "VLOOKUP no result found"},
-		"VLOOKUP(INT(1),E2:E9,1)":       {"#N/A", "VLOOKUP no result found"},
-		"VLOOKUP(MUNIT(2),MUNIT(3),1)":  {"#N/A", "VLOOKUP no result found"},
-		"VLOOKUP(1,G1:H2,1,FALSE)":      {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP()":                                       {"#VALUE!", "VLOOKUP requires at least 3 arguments"},
+		"VLOOKUP(D2,D1,1,FALSE)":                          {"#VALUE!", "VLOOKUP requires second argument of table array"},
+		"VLOOKUP(D2,D:D,FALSE,FALSE)":                     {"#VALUE!", "VLOOKUP requires numeric col argument"},
+		"VLOOKUP(D2,D:D,1,FALSE,FALSE)":                   {"#VALUE!", "VLOOKUP requires at most 4 arguments"},
+		"VLOOKUP(D2,D10:D10,1,FALSE)":                     {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(D2,D:D,2,FALSE)":                         {"#N/A", "VLOOKUP has invalid column index"},
+		"VLOOKUP(D2,C:C,1,FALSE)":                         {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(ISNUMBER(1),F3:F9,1)":                    {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(INT(1),E2:E9,1)":                         {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(MUNIT(2),MUNIT(3),1)":                    {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(1,G1:H2,1,FALSE)":                        {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"-001\",{\"46027-001\",22},2,FALSE)":    {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"46027\",{\"46027-001\",22},2,FALSE)":   {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"6027-00\",{\"46027-001\",22},2,FALSE)": {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"\",{\"46027-001\",22},2,FALSE)":        {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"?\",{\"46027-001\",22},2,FALSE)":       {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"*XYZ*\",{\"46027-001\",22},2,FALSE)":   {"#N/A", "VLOOKUP no result found"},
+		"VLOOKUP(\"*\\\",{\"price$tail\",88},2,FALSE)":    {"#N/A", "VLOOKUP no result found"},
 		// INDEX
 		"INDEX()":          {"#VALUE!", "INDEX requires 2 or 3 arguments"},
 		"INDEX(A1,2)":      {"#REF!", "INDEX row_num out of range"},
@@ -4346,6 +4406,10 @@ func TestCalcCellValue(t *testing.T) {
 		"INDIRECT(\"R C1\",FALSE)":       {"#REF!", "#REF!"},
 		"INDIRECT(\"R1C \",FALSE)":       {"#REF!", "#REF!"},
 		"INDIRECT(\"R1C1:R2C \",FALSE)":  {"#REF!", "#REF!"},
+		"INDIRECT(\"SheetN!A1\")":        {"#REF!", "#REF!"},
+		"INDIRECT(\"E2\",FALSE)":         {"#REF!", "#REF!"},
+		"INDIRECT(\"\")":                 {"#REF!", "#REF!"},
+		"INDIRECT(\"'A1\")":              {"#REF!", "#REF!"},
 		// LOOKUP
 		"LOOKUP()":                     {"#VALUE!", "LOOKUP requires at least 2 arguments"},
 		"LOOKUP(D2,D1,D2)":             {"#VALUE!", "LOOKUP requires second argument of table array"},
@@ -4995,7 +5059,7 @@ func TestCalcWithDefinedName(t *testing.T) {
 				Name: names[idx], RefersTo: "'Sheet 1'!" + cell,
 			}))
 		}
-		assert.NoError(t, f.SetCellFormula("Sheet 1", "B1", "=val1-val2-val3-val4"))
+		assert.NoError(t, f.SetCellFormula("Sheet 1", "B1", "val1-val2-val3-val4"))
 		result, err := f.CalcCellValue("Sheet 1", "B1")
 		assert.NoError(t, err)
 		assert.Equal(t, "45", result)
@@ -5222,7 +5286,7 @@ func TestCalcTRANSPOSE(t *testing.T) {
 		{"b", "e"},
 		{"c", "f"},
 	}
-	formula := "=TRANSPOSE(A1:A3)"
+	formula := "TRANSPOSE(A1:A3)"
 	f := prepareCalcData(cellData)
 	formulaType, ref := STCellFormulaTypeArray, "D1:F2"
 	assert.NoError(t, f.SetCellFormula("Sheet1", "D1", formula,
@@ -5845,16 +5909,39 @@ func TestCalcMAXMINIFS(t *testing.T) {
 		assert.NoError(t, f.SetSheetRow("Sheet1", cell, &row))
 	}
 	formulaList := map[string]string{
-		"MAX(B1:B2)":                 "0",
-		"MAXIFS(B1:B2,A1:A2,\">0\")": "0",
-		"MIN(B3:B4)":                 "0",
-		"MINIFS(B3:B4,A3:A4,\"<0\")": "0",
+		"MAX(B1:B2)":                       "0",
+		"_xlfn.MAXIFS(B1:B2,A1:A2,\">0\")": "0",
+		"_xlfn.MAXIFS(A1:A4,A1:A4,\"<0\")": "0",
+		"MIN(B3:B4)":                       "0",
+		"_xlfn.MINIFS(B3:B4,A3:A4,\"<0\")": "0",
 	}
 	for formula, expected := range formulaList {
 		assert.NoError(t, f.SetCellFormula("Sheet1", "C1", formula))
 		result, err := f.CalcCellValue("Sheet1", "C1")
 		assert.NoError(t, err, formula)
 		assert.Equal(t, expected, result, formula)
+	}
+	calcError := map[string][]string{
+		"_xlfn.MAXIFS(1,A1:A4,\">0\")":                               {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A2,A1:A4,\">0\")":                           {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A2,A1:B2,\"<0\")":                           {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A4,A1:A4,\">0\",1,\">0\")":                  {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A4,A1:A4,\">0\",A1:A2,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:B2,A1:B2,\"<0\",A1:A2,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A4,A1:A4,\">0\",A1:A4,\">0\",A1:A2,\">0\")": {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(1,A1:A4,\">0\")":                               {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A2,A1:A4,\">0\")":                           {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A2,A1:B2,\"<0\")":                           {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A4,A1:A4,\">0\",1,\">0\")":                  {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A4,A1:A4,\">0\",A1:A2,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:B2,A1:B2,\"<0\",A1:A2,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A4,A1:A4,\">0\",A1:A4,\">0\",A1:A2,\">0\")": {"#VALUE!", "#VALUE!"},
+	}
+	for formula, expected := range calcError {
+		assert.NoError(t, f.SetCellFormula("Sheet1", "C1", formula))
+		result, err := f.CalcCellValue("Sheet1", "C1")
+		assert.Equal(t, expected[0], result, formula)
+		assert.EqualError(t, err, expected[1], formula)
 	}
 }
 
@@ -5918,18 +6005,75 @@ func TestCalcSUMIFSAndAVERAGEIFS(t *testing.T) {
 		assert.Equal(t, expected, result, formula)
 	}
 	calcError := map[string][]string{
-		"AVERAGEIFS()":                                  {"#VALUE!", "AVERAGEIFS requires at least 3 arguments"},
-		"AVERAGEIFS(H1,\"\")":                           {"#VALUE!", "AVERAGEIFS requires at least 3 arguments"},
-		"AVERAGEIFS(H1,\"\",TRUE,1)":                    {"#N/A", "#N/A"},
-		"AVERAGEIFS(H1,\"\",TRUE)":                      {"#DIV/0!", "AVERAGEIF divide by zero"},
-		"AVERAGEIFS(D2:D13,A2:A13,1,A2:A13,2)":          {"#DIV/0!", "AVERAGEIF divide by zero"},
-		"SUMIFS()":                                      {"#VALUE!", "SUMIFS requires at least 3 arguments"},
-		"SUMIFS(D2:D13,A2:A13,1,B2:B13)":                {"#N/A", "#N/A"},
-		"SUMIFS(D20:D23,A2:A13,\">2\",C2:C13,\"Jeff\")": {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS()":                                                {"#VALUE!", "AVERAGEIFS requires at least 3 arguments"},
+		"AVERAGEIFS(H1,\"\")":                                         {"#VALUE!", "AVERAGEIFS requires at least 3 arguments"},
+		"AVERAGEIFS(H1,\"\",TRUE,1)":                                  {"#N/A", "#N/A"},
+		"AVERAGEIFS(H1,\"\",TRUE)":                                    {"#DIV/0!", "AVERAGEIF divide by zero"},
+		"AVERAGEIFS(D2:D13,A2:A13,1,A2:A13,2)":                        {"#DIV/0!", "AVERAGEIF divide by zero"},
+		"AVERAGEIFS(1,A2:A13,\">0\")":                                 {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(D2:D3,A2:A13,\">2\")":                             {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(D2:D13,A2:B13,\"North\")":                         {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(D2:D13,A2:A13,\">0\",1,\">0\")":                   {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(D2:D13,A2:A13,\">0\",A2:A3,\">0\")":               {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(D2:D13,A2:B13,\"North\",A2:A13,\">0\")":           {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(D2:D13,A2:A13,\">0\",A2:A13,\">0\",A2:A3,\">0\")": {"#VALUE!", "#VALUE!"},
+		"SUMIFS()":                       {"#VALUE!", "SUMIFS requires at least 3 arguments"},
+		"SUMIFS(D2:D13,A2:A13,1,B2:B13)": {"#N/A", "#N/A"},
+		"SUMIFS(D20:D23,A2:A13,\">2\",C2:C13,\"Jeff\")":           {"#VALUE!", "#VALUE!"},
+		"SUMIFS(1,A2:A13,\">0\")":                                 {"#VALUE!", "#VALUE!"},
+		"SUMIFS(D2:D13,A2:B13,\"North\")":                         {"#VALUE!", "#VALUE!"},
+		"SUMIFS(D2:D13,A2:A13,\">0\",1,\">0\")":                   {"#VALUE!", "#VALUE!"},
+		"SUMIFS(D2:D13,A2:A13,\">0\",A2:A3,\">0\")":               {"#VALUE!", "#VALUE!"},
+		"SUMIFS(D2:D13,A2:B13,\"North\",A2:A13,\">0\")":           {"#VALUE!", "#VALUE!"},
+		"SUMIFS(D2:D13,A2:A13,\">0\",A2:A13,\">0\",A2:A3,\">0\")": {"#VALUE!", "#VALUE!"},
 	}
 	for formula, expected := range calcError {
 		assert.NoError(t, f.SetCellFormula("Sheet1", "E1", formula))
 		result, err := f.CalcCellValue("Sheet1", "E1")
+		assert.Equal(t, expected[0], result, formula)
+		assert.EqualError(t, err, expected[1], formula)
+	}
+}
+
+func TestCalcIFS(t *testing.T) {
+	cellData := [][]any{
+		{1, 2, 1, 1, 1, 0},
+		{3, 4, 0, 1, 1, 1},
+	}
+	f := prepareCalcData(cellData)
+	formulaList := map[string]string{
+		"AVERAGEIFS(A1:B2,C1:D2,1,E1:F2,1)":   "2.5",
+		"COUNTIFS(C1:D2,1,E1:F2,1)":           "2",
+		"_xlfn.MAXIFS(A1:B2,C1:D2,1,E1:F2,1)": "4",
+		"_xlfn.MINIFS(A1:B2,C1:D2,1,E1:F2,1)": "1",
+		"SUMIFS(A1:B2,C1:D2,1,E1:F2,1)":       "5",
+	}
+	for formula, expected := range formulaList {
+		assert.NoError(t, f.SetCellFormula("Sheet1", "G1", formula))
+		result, err := f.CalcCellValue("Sheet1", "G1")
+		assert.NoError(t, err, formula)
+		assert.Equal(t, expected, result, formula)
+	}
+	calcError := map[string][]string{
+		"AVERAGEIFS(A1:A1,A1:B1,\">0\")":                {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(A1:B1,A1:B1,\">0\",A1:A1,\">0\")":   {"#VALUE!", "#VALUE!"},
+		"AVERAGEIFS(A1:A2,A1:A2,\">0\",A1:A1,\">0\")":   {"#VALUE!", "#VALUE!"},
+		"COUNTIFS(A1:B1,\">0\",A1:A1,\">0\")":           {"#VALUE!", "#VALUE!"},
+		"COUNTIFS(A1:A2,\">0\",A1:A1,\">0\")":           {"#VALUE!", "#VALUE!"},
+		"COUNTIFS(A1:B2,\">0\",A1:B1,\">0\")":           {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A1,A1:B1,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:B1,A1:B1,\">0\",A1:A1,\">0\")": {"#VALUE!", "#VALUE!"},
+		"_xlfn.MAXIFS(A1:A2,A1:A2,\">0\",A1:A1,\">0\")": {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A1,A1:B1,\">0\")":              {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:B1,A1:B1,\">0\",A1:A1,\">0\")": {"#VALUE!", "#VALUE!"},
+		"_xlfn.MINIFS(A1:A2,A1:A2,\">0\",A1:A1,\">0\")": {"#VALUE!", "#VALUE!"},
+		"SUMIFS(A1:A1,A1:B1,\">0\")":                    {"#VALUE!", "#VALUE!"},
+		"SUMIFS(A1:B1,A1:B1,\">0\",A1:A1,\">0\")":       {"#VALUE!", "#VALUE!"},
+		"SUMIFS(A1:A2,A1:A2,\">0\",A1:A1,\">0\")":       {"#VALUE!", "#VALUE!"},
+	}
+	for formula, expected := range calcError {
+		assert.NoError(t, f.SetCellFormula("Sheet1", "G1", formula))
+		result, err := f.CalcCellValue("Sheet1", "G1")
 		assert.Equal(t, expected[0], result, formula)
 		assert.EqualError(t, err, expected[1], formula)
 	}
@@ -6804,26 +6948,26 @@ func TestFormulaRawCellValueOption(t *testing.T) {
 		raw      bool
 		expected string
 	}{
-		{"=VALUE(\"1.0E-07\")", false, "0.00"},
-		{"=VALUE(\"1.0E-07\")", true, "0.0000001"},
-		{"=\"text\"", false, "$text"},
-		{"=\"text\"", true, "text"},
-		{"=\"10e3\"", false, "$10e3"},
-		{"=\"10e3\"", true, "10e3"},
-		{"=\"10\" & \"e3\"", false, "$10e3"},
-		{"=\"10\" & \"e3\"", true, "10e3"},
-		{"=10e3", false, "10000.00"},
-		{"=10e3", true, "10000"},
-		{"=\"1111111111111111\"", false, "$1111111111111111"},
-		{"=\"1111111111111111\"", true, "1111111111111111"},
-		{"=1111111111111111", false, "1111111111111110.00"},
-		{"=1111111111111111", true, "1.11111111111111E+15"},
-		{"=1444.00000000003", false, "1444.00"},
-		{"=1444.00000000003", true, "1444.00000000003"},
-		{"=1444.000000000003", false, "1444.00"},
-		{"=1444.000000000003", true, "1444"},
-		{"=ROUND(1444.00000000000003,2)", false, "1444.00"},
-		{"=ROUND(1444.00000000000003,2)", true, "1444"},
+		{"VALUE(\"1.0E-07\")", false, "0.00"},
+		{"VALUE(\"1.0E-07\")", true, "0.0000001"},
+		{"\"text\"", false, "$text"},
+		{"\"text\"", true, "text"},
+		{"\"10e3\"", false, "$10e3"},
+		{"\"10e3\"", true, "10e3"},
+		{"\"10\" & \"e3\"", false, "$10e3"},
+		{"\"10\" & \"e3\"", true, "10e3"},
+		{"10e3", false, "10000.00"},
+		{"10e3", true, "10000"},
+		{"\"1111111111111111\"", false, "$1111111111111111"},
+		{"\"1111111111111111\"", true, "1111111111111111"},
+		{"1111111111111111", false, "1111111111111110.00"},
+		{"1111111111111111", true, "1.11111111111111E+15"},
+		{"1444.00000000003", false, "1444.00"},
+		{"1444.00000000003", true, "1444.00000000003"},
+		{"1444.000000000003", false, "1444.00"},
+		{"1444.000000000003", true, "1444"},
+		{"ROUND(1444.00000000000003,2)", false, "1444.00"},
+		{"ROUND(1444.00000000000003,2)", true, "1444"},
 	}
 	exp := "0.00;0.00;;$@"
 	styleID, err := f.NewStyle(&Style{CustomNumFmt: &exp})
@@ -7117,15 +7261,15 @@ func TestCalcSORTBY(t *testing.T) {
 	}
 	f := prepareCalcData(cellData)
 	formulaList := map[string]string{
-		"TEXTJOIN(\",\", TRUE, SORTBY(A2:A8, C2:C8))":                         "David,Alice,Alice,Alice,Charlie,Bob,Bob",
-		"TEXTJOIN(\",\", TRUE, SORTBY(A2:A8, C2:C8, -1))":                     "Bob,Bob,Charlie,Alice,Alice,Alice,David",
-		"TEXTJOIN(\",\", TRUE, SORTBY(A2:A8, B2:B8, 1, C2:C8, -1))":           "Charlie,Alice,Alice,Alice,Bob,Bob,David",
-		"TEXTJOIN(\",\", TRUE, SORTBY(A2:A8, D2:D8, 1, B2:B8, 1, C2:C8, -1))": "Charlie,Alice,Bob,Alice,Bob,David,Alice",
-		"TEXTJOIN(\";\", TRUE, SORTBY(A2:C4, C2:C4))":                         "Alice;North;1200;Alice;North;1500;Bob;South;2000",
-		"TEXTJOIN(\",\", TRUE, SORTBY(C2:C8, A2:B8))":                         "1500,1200,1700,2000,2200,1800,1000",
-		"TEXTJOIN(\",\", TRUE, SORTBY(A2:A10, C2:C10))":                       "David,Alice,Alice,Alice,Charlie,Bob,Bob,Test",
-		"TEXTJOIN(\",\", TRUE, SORTBY(D2:D8, D2:D8))":                         "1,1,1,2,2,2,3",
-		"TEXTJOIN(\",\", TRUE, SORTBY(B2:B8, B2:B8))":                         "East,North,North,North,South,South,West",
+		"TEXTJOIN(\",\",TRUE,SORTBY(A2:A8,C2:C8))":                    "David,Alice,Alice,Alice,Charlie,Bob,Bob",
+		"TEXTJOIN(\",\",TRUE,SORTBY(A2:A8,C2:C8,-1))":                 "Bob,Bob,Charlie,Alice,Alice,Alice,David",
+		"TEXTJOIN(\",\",TRUE,SORTBY(A2:A8,B2:B8,1,C2:C8,-1))":         "Charlie,Alice,Alice,Alice,Bob,Bob,David",
+		"TEXTJOIN(\",\",TRUE,SORTBY(A2:A8,D2:D8,1,B2:B8,1,C2:C8,-1))": "Charlie,Alice,Bob,Alice,Bob,David,Alice",
+		"TEXTJOIN(\";\",TRUE,SORTBY(A2:C4,C2:C4))":                    "Alice;North;1200;Alice;North;1500;Bob;South;2000",
+		"TEXTJOIN(\",\",TRUE,SORTBY(C2:C8,A2:B8))":                    "1500,1200,1700,2000,2200,1800,1000",
+		"TEXTJOIN(\",\",TRUE,SORTBY(A2:A10,C2:C10))":                  "David,Alice,Alice,Alice,Charlie,Bob,Bob,Test",
+		"TEXTJOIN(\",\",TRUE,SORTBY(D2:D8,D2:D8))":                    "1,1,1,2,2,2,3",
+		"TEXTJOIN(\",\",TRUE,SORTBY(B2:B8,B2:B8))":                    "East,North,North,North,South,South,West",
 	}
 	for formula, expected := range formulaList {
 		assert.NoError(t, f.SetCellFormula("Sheet1", "E1", formula))
@@ -7135,12 +7279,12 @@ func TestCalcSORTBY(t *testing.T) {
 	}
 	calcError := map[string][]string{
 		"SORTBY(A2:A7)": {"#VALUE!", "SORTBY requires at least 2 arguments"},
-		"SORTBY(A2:A7, C2:C7, 1, D2:D7, 1, B2:B7, 1, E2:E7, 1)": {"#VALUE!", "SORTBY takes at most 7 arguments, received 9"},
-		"SORTBY(A2:A7, C2:C7, 1, D2:D7)":                        {"#VALUE!", "SORTBY requires 2, 3, 5, or 7 arguments, received 4"},
-		"SORTBY(A2:A7, C2:C7, 1, D2:D7, 1, B2:B7)":              {"#VALUE!", "SORTBY requires 2, 3, 5, or 7 arguments, received 6"},
-		"SORTBY(A2:A7, C2:C5)":                                  {"#VALUE!", "by_array dimensions (4 rows) do not match array dimensions (6 rows)"},
-		"SORTBY(A2:A7, C2:C7, 2)":                               {"#VALUE!", "sort_order must be 1 or -1, received 2"},
-		"SORTBY(A2:A7, C2:C7, 0)":                               {"#VALUE!", "sort_order must be 1 or -1, received 0"},
+		"SORTBY(A2:A7,C2:C7,1,D2:D7,1,B2:B7,1,E2:E7,1)": {"#VALUE!", "SORTBY takes at most 7 arguments, received 9"},
+		"SORTBY(A2:A7,C2:C7,1,D2:D7)":                   {"#VALUE!", "SORTBY requires 2, 3, 5, or 7 arguments, received 4"},
+		"SORTBY(A2:A7,C2:C7,1,D2:D7,1,B2:B7)":           {"#VALUE!", "SORTBY requires 2, 3, 5, or 7 arguments, received 6"},
+		"SORTBY(A2:A7,C2:C5)":                           {"#VALUE!", "by_array dimensions (4 rows) do not match array dimensions (6 rows)"},
+		"SORTBY(A2:A7,C2:C7,2)":                         {"#VALUE!", "sort_order must be 1 or -1, received 2"},
+		"SORTBY(A2:A7,C2:C7,0)":                         {"#VALUE!", "sort_order must be 1 or -1, received 0"},
 	}
 	for formula, expected := range calcError {
 		assert.NoError(t, f.SetCellFormula("Sheet1", "F1", formula))
@@ -7184,7 +7328,7 @@ func TestCalcSORTBY(t *testing.T) {
 		{"Name", "Score"},
 		{"Alice", 100},
 	})
-	assert.NoError(t, f.SetCellFormula("Sheet1", "C1", "=SORTBY(A2:A2,{})"))
+	assert.NoError(t, f.SetCellFormula("Sheet1", "C1", "SORTBY(A2:A2,{})"))
 	result, err = f.CalcCellValue("Sheet1", "C1")
 	assert.Error(t, err)
 	assert.Equal(t, formulaErrorVALUE, result)
@@ -7193,7 +7337,7 @@ func TestCalcSORTBY(t *testing.T) {
 		{"Name", "Score"},
 		{"Alice", 100},
 	})
-	assert.NoError(t, f.SetCellFormula("Sheet1", "C1", "=SORTBY({},B2:B2)"))
+	assert.NoError(t, f.SetCellFormula("Sheet1", "C1", "SORTBY({},B2:B2)"))
 	result, err = f.CalcCellValue("Sheet1", "C1")
 	assert.Error(t, err)
 	assert.Equal(t, formulaErrorVALUE, result)
@@ -7203,11 +7347,11 @@ func TestCalcSORTBY(t *testing.T) {
 		{4, 5, 6},
 		{7, 8, 9},
 	})
-	assert.NoError(t, f.SetCellFormula("Sheet1", "D2", "=SORTBY(NA(),B1:B2)"))
+	assert.NoError(t, f.SetCellFormula("Sheet1", "D2", "SORTBY(NA(),B1:B2)"))
 	result, err = f.CalcCellValue("Sheet1", "D2")
 	assert.Equal(t, formulaErrorNA, result)
 	assert.Equal(t, formulaErrorNA, err.Error())
-	assert.NoError(t, f.SetCellFormula("Sheet1", "D4", "=SORTBY(A1:A2,NA())"))
+	assert.NoError(t, f.SetCellFormula("Sheet1", "D4", "SORTBY(A1:A2,NA())"))
 	_, err = f.CalcCellValue("Sheet1", "D4")
 	assert.Equal(t, formulaErrorNA, result)
 	assert.Equal(t, formulaErrorNA, err.Error())
@@ -7349,4 +7493,42 @@ func TestCalc3DRef(t *testing.T) {
 	assert.Empty(t, split3DReference("Sheet1:Sheet2:Sheet3!A1"))
 	assert.Empty(t, split3DReference(":Sheet1!A1"))
 	assert.Empty(t, split3DReference("!A1"))
+}
+
+func TestCalcINDIRECTSheetRef(t *testing.T) {
+	f := NewFile()
+	defer func() {
+		assert.NoError(t, f.Close())
+	}()
+	for sheet, value := range map[string]any{
+		"Test": 1, "Test Sheet": "plain text", "Test!Sheet": 2,
+	} {
+		_, err := f.NewSheet(sheet)
+		assert.NoError(t, err)
+		assert.NoError(t, f.SetCellValue(sheet, "A1", value))
+	}
+	formulaList := map[string]string{
+		"COUNT(INDIRECT(\"Test!$A$1\"))":          "1",
+		"INDIRECT(\"'Test Sheet'!A1\")":           "plain text",
+		"INDIRECT(\"'Test!Sheet'!A1\")":           "2",
+		"INDIRECT(\"test!A1\")":                   "1",
+		"INDIRECT(\"Test!R1C1\",FALSE)":           "1",
+		"SUM(INDIRECT(\"Test!A1:A1\"))":           "1",
+		"SUM(INDIRECT(\"Test!R1C1:R1C1\",FALSE))": "1",
+	}
+	for formula, expected := range formulaList {
+		assert.NoError(t, f.SetCellFormula("Sheet1", "C1", formula))
+		result, err := f.CalcCellValue("Sheet1", "C1")
+		assert.NoError(t, err, formula)
+		assert.Equal(t, expected, result, formula)
+	}
+	for _, formula := range []string{
+		"INDIRECT(\"Test Sheet!A1\")",
+		"INDIRECT(\"Test!Sheet!A1\")",
+	} {
+		assert.NoError(t, f.SetCellFormula("Sheet1", "C1", formula))
+		result, err := f.CalcCellValue("Sheet1", "C1")
+		assert.EqualError(t, err, "#REF!", formula)
+		assert.Equal(t, "#REF!", result, formula)
+	}
 }
